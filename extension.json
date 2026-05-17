@@ -1,0 +1,34 @@
+{
+  "$schema": "https://www.mediawiki.org/extension/extension-schema.json",
+  "name": "WikiTraceability",
+  "version": "0.1.0",
+  "author": ["guy20ome"],
+  "url": "https://github.com/guy20ome/wikitraceability",
+  "type": "parserhook",
+  "license-name": "MIT",
+  "ManifestVersion": 2,
+  "AutoloadClasses": {
+    "WikiTraceability\\Traceability": "includes/Traceability.php",
+    "WikiTraceability\\SpecialProduct": "includes/SpecialProduct.php",
+    "WikiTraceability\\SpecialTransformation": "includes/SpecialTransformation.php"
+  },
+  "MessagesDirs": {
+    "WikiTraceability": "i18n"
+  },
+  "MessagesFiles": {
+    "WikiTraceabilityAlias": "i18n/WikiTraceability.alias.php"
+  },
+  "SpecialPages": {
+    "TraceabilityProduct": "WikiTraceability\\SpecialProduct",
+    "TraceabilityTransformation": "WikiTraceability\\SpecialTransformation"
+  },
+  "ResourceModules": {
+    "ext.wikitraceability": {
+      "scripts": "resources/src/Traceability.js",
+      "styles": "resources/styles/Traceability.css",
+      "targets": ["desktop"],
+      "localBasePath": ".",
+      "remoteExtPath": "WikiTraceability"
+    }
+  }
+}

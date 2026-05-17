@@ -36,3 +36,15 @@ wikitraceability will be buit on top of wikimedia.
 1. a wikimedia extension should be used to display graphically the traceability of a product. it will let the user navigate in the graph.
 2. Semantic MediaWiki will be used to store all the data needed
 3. wikitraceability product can be linked to an open product database like open food fact 
+
+Scaffold
+A minimal MediaWiki extension scaffold has been added with:
+- `extension.json`
+- `includes/SpecialProduct.php`
+- `includes/SpecialTransformation.php`
+- `resources/src/Traceability.js`
+- `resources/styles/Traceability.css`
+- `i18n/en.json`
+- `i18n/WikiTraceability.alias.php`
+
+Next step: install the extension into a MediaWiki site and wire Semantic MediaWiki data types for Product and Transformation.
