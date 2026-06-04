@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  database:
+    image: mariadb:latest
+    container_name: mediawiki-db
+    environment:
+      MYSQL_ROOT_PASSWORD: wikiroot
+      MYSQL_DATABASE: mediawiki
+      MYSQL_USER: mediawiki
+      MYSQL_PASSWORD: mediawikipass
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - mediawiki-network
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  mediawiki:
+    build: .
+    container_name: mediawiki
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      MEDIAWIKI_DB_HOST: database
+      MEDIAWIKI_DB_NAME: mediawiki
+      MEDIAWIKI_DB_USER: mediawiki
+      MEDIAWIKI_DB_PASSWORD: mediawikipass
+      MEDIAWIKI_ADMIN_USER: Admin
+      MEDIAWIKI_ADMIN_PASSWORD: WikiTraceAdminPass2026
+    volumes:
+      - mediawiki-data:/var/www/html
+      - ./includes:/var/www/html/extensions/WikiTraceability/includes
+      - ./resources:/var/www/html/extensions/WikiTraceability/resources
+      - ./i18n:/var/www/html/extensions/WikiTraceability/i18n
+      - ./extension.json:/var/www/html/extensions/WikiTraceability/extension.json
+    networks:
+      - mediawiki-network
+
+volumes:
+  db-data:
+  mediawiki-data:
+
+networks:
+  mediawiki-network:
+    driver: bridge

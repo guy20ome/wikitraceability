@@ -6,7 +6,7 @@
   "url": "https://github.com/guy20ome/wikitraceability",
   "type": "parserhook",
   "license-name": "MIT",
-  "ManifestVersion": 2,
+  "manifest_version": 2,
   "AutoloadClasses": {
     "WikiTraceability\\Traceability": "includes/Traceability.php",
     "WikiTraceability\\SpecialProduct": "includes/SpecialProduct.php",
