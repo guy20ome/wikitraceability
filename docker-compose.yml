@@ -36,6 +36,7 @@ services:
       MEDIAWIKI_ADMIN_PASSWORD: WikiTraceAdminPass2026
     volumes:
       - mediawiki-data:/var/www/html
+      - ./LocalSettings.php:/var/www/html/LocalSettings.php
       - ./includes:/var/www/html/extensions/WikiTraceability/includes
       - ./resources:/var/www/html/extensions/WikiTraceability/resources
       - ./i18n:/var/www/html/extensions/WikiTraceability/i18n
