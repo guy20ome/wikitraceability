@@ -137,3 +137,8 @@ wfLoadSkin( 'Vector' );
 # Add more configuration options below.
 
 wfLoadExtension( 'WikiTraceability' );
+wfLoadExtension( 'SemanticMediaWiki' );
+wfLoadExtension( 'PageForms' );
+
+enableSemantics( $wgUser );
+$smwgNamespacesWithSemanticLinks[NS_MAIN] = true;
