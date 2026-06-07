@@ -138,7 +138,7 @@ wfLoadSkin( 'Vector' );
 
 wfLoadExtension( 'WikiTraceability' );
 wfLoadExtension( 'SemanticMediaWiki' );
-wfLoadExtension( 'PageForms' );
+#wfLoadExtension( 'PageForms' );
 
-enableSemantics( $wgUser );
-$smwgNamespacesWithSemanticLinks[NS_MAIN] = true;
+#enableSemantics( $wgUser );
+#$smwgNamespacesWithSemanticLinks[NS_MAIN] = true;

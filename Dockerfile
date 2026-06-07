@@ -1,34 +1,23 @@
-FROM mediawiki:1.41
+FROM mediawiki:latest
 
 # Install additional PHP extensions if needed
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git vim && rm -rf /var/lib/apt/lists/*
+
+# below is useless
+#=> not working as mediawiki-data is mounted over /var/www/html
 
 # Copy the extension into the extensions directory
-COPY extension.json /var/www/html/w/extensions/WikiTraceability/
-COPY includes /var/www/html/w/extensions/WikiTraceability/includes
-COPY resources /var/www/html/w/extensions/WikiTraceability/resources
-COPY i18n /var/www/html/w/extensions/WikiTraceability/i18n
-
+#COPY extension.json /var/www/html/extensions/WikiTraceability/
+#COPY includes /var/www/html/extensions/WikiTraceability/includes
+#COPY resources /var/www/html/extensions/WikiTraceability/resources
+#COPY i18n /var/www/html/extensions/WikiTraceability/i18n
 # Set proper permissions
-RUN chown -R www-data:www-data /var/www/html/w/extensions/WikiTraceability
+#RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
+# Install Semantic MediaWiki extension
+#RUN git clone https://github.com/SemanticMediaWiki/SemanticMediaWiki /var/www/html/extensions/SemanticMediaWiki
+#RUN chown -R www-data:www-data /var/www/html/extensions/SemanticMediaWiki
 
-FROM mediawiki:1.41
-
-# Install additional PHP extensions if needed
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy the extension into the extensions directory
-COPY extension.json /var/www/html/extensions/WikiTraceability/
-COPY includes /var/www/html/extensions/WikiTraceability/includes
-COPY resources /var/www/html/extensions/WikiTraceability/resources
-COPY i18n /var/www/html/extensions/WikiTraceability/i18n
-
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
+# above is useless
 
 # Create entrypoint script to enable extension after setup
 RUN echo '#!/bin/bash\n\
