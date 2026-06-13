@@ -1,23 +1,34 @@
-FROM mediawiki:latest
+FROM mediawiki:1.41
 
-# Install additional PHP extensions if needed
-RUN apt-get update && apt-get install -y git vim && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    unzip \
+    zip \
+    libzip-dev \
+    mariadb-client \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
 
-# below is useless
-#=> not working as mediawiki-data is mounted over /var/www/html
+RUN curl -sS https://getcomposer.org/installer \
+    | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copy the extension into the extensions directory
-#COPY extension.json /var/www/html/extensions/WikiTraceability/
-#COPY includes /var/www/html/extensions/WikiTraceability/includes
-#COPY resources /var/www/html/extensions/WikiTraceability/resources
-#COPY i18n /var/www/html/extensions/WikiTraceability/i18n
+RUN git clone https://github.com/SemanticMediaWiki/SemanticMediaWiki.git \
+    /var/www/html/extensions/SemanticMediaWiki --branch 5.1.0
+
+WORKDIR /var/www/html/extensions/SemanticMediaWiki
+
+RUN composer install --no-dev
+
+WORKDIR /var/www/html
+
+COPY ./includes/DatabaseMySQL.php /var/www/html/includes/libs/rdbms/database/DatabaseMySQL.php
+#COPY ./LocalSettings1.php /var/www/html/LocalSettings.php
+#RUN php ./maintenance/update.php
+
 # Set proper permissions
-#RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
-# Install Semantic MediaWiki extension
-#RUN git clone https://github.com/SemanticMediaWiki/SemanticMediaWiki /var/www/html/extensions/SemanticMediaWiki
 #RUN chown -R www-data:www-data /var/www/html/extensions/SemanticMediaWiki
-
-# above is useless
+#RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
 
 # Create entrypoint script to enable extension after setup
 RUN echo '#!/bin/bash\n\

@@ -140,5 +140,7 @@ wfLoadExtension( 'WikiTraceability' );
 wfLoadExtension( 'SemanticMediaWiki' );
 #wfLoadExtension( 'PageForms' );
 
+#enableSemantics( 'localhost:8080' );
 #enableSemantics( $wgUser );
+
 #$smwgNamespacesWithSemanticLinks[NS_MAIN] = true;

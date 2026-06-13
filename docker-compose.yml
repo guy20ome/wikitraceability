@@ -33,13 +33,13 @@ services:
       MEDIAWIKI_ADMIN_USER: Admin
       MEDIAWIKI_ADMIN_PASSWORD: WikiTraceAdminPass2026
     volumes:
-      - mediawiki-data:/var/www/html
+#      - mediawiki-data:/var/www/html
       - ./includes:/var/www/html/extensions/WikiTraceability/includes
       - ./resources:/var/www/html/extensions/WikiTraceability/resources
       - ./i18n:/var/www/html/extensions/WikiTraceability/i18n
       - ./extension.json:/var/www/html/extensions/WikiTraceability/extension.json
-      - ../SemanticMediaWiki:/var/www/html/extensions/SemanticMediaWiki
-      - ./LocalSettings.php:/var/www/html/LocalSettings.php
+      - ./LocalSettings2.php:/var/www/html/LocalSettings.php
+#      - ./includes/DatabaseMySQL.php:/var/www/html/includes/libs/rdbms/database/DatabaseMySQL.php
     networks:
       - mediawiki-network
 
