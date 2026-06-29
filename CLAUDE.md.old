@@ -1,0 +1,24 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Common Commands
+- Build: Use `./git_setup.sh` to configure the repository
+- Lint: Run `./lint.sh` (if script exists - check .claude directory for customization)
+- Test: Execute `./test.sh` (check GuimmSimilarity directory for test suites)
+- Run development server: `cd GuimmSimilarity && npm start`
+
+## Code Architecture
+- The core functionality resides in the `GuimmSimilarity` directory
+- Configuration files are maintained in the `.claude` directory
+- Git operations are managed through custom scripts in the root directory
+
+## Key Files
+- `guimm-similarity.js`: Main implementation file
+- `.aider.*` files: Store interaction history for developer context
+- `git_clone.sh`/`git_setup.sh`: Repository initialization scripts
+
+## Configuration Tips
+- Customize linting rules in `.claude/settings.json`
+- Add new commands to `.claude/hooks/` directory
+- Update `.aider.input.history` when refining workflows

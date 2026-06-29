@@ -1,10 +1,10 @@
 {
   "$schema": "https://www.mediawiki.org/extension/extension-schema.json",
   "name": "WikiTraceability",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": ["guy20ome"],
   "url": "https://github.com/guy20ome/wikitraceability",
-  "type": "parserhook",
+  "type": "other",
   "license-name": "MIT",
   "manifest_version": 2,
   "AutoloadClasses": {
@@ -30,5 +30,8 @@
       "localBasePath": ".",
       "remoteExtPath": "WikiTraceability"
     }
-  }
+  },
+  "ExtensionFunctions": [
+    "WikiTraceability\\Traceability::init"
+  ]
 }
