@@ -136,11 +136,22 @@ wfLoadSkin( 'Vector' );
 # End of automatically generated settings.
 # Add more configuration options below.
 
+# Enable WikiTraceability extension
 wfLoadExtension( 'WikiTraceability' );
+
+# Enable Semantic MediaWiki
 wfLoadExtension( 'SemanticMediaWiki' );
-#wfLoadExtension( 'PageForms' );
+enableSemantics( 'localhost:8080' );
 
-#enableSemantics( 'localhost:8080' );
-#enableSemantics( $wgUser );
+# Configure SMW for full semantic support
+$smwgNamespacesWithSemanticLinks[NS_MAIN] = true;
+$smwgNamespacesWithSemanticLinks[NS_TALK] = false;
 
-#$smwgNamespacesWithSemanticLinks[NS_MAIN] = true;
+# Enable SPARQL endpoint (optional)
+# $smwgSparqlDatabaseConnector = 'sparql';
+
+# Enable PageForms (optional, uncomment if installed)
+# wfLoadExtension( 'PageForms' );
+
+# WikiTraceability specific settings
+$wgTraceabilityEnableTreeView = true;

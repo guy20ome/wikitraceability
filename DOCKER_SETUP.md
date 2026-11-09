@@ -1,115 +1,198 @@
-# Docker MediaWiki Setup Guide
+# Docker MediaWiki + Semantic MediaWiki + WikiTraceability Setup
 
-This setup provides a local development environment for the WikiTraceability extension using Docker.
+This provides a complete local development environment with **MediaWiki**, **Semantic MediaWiki**, and the **WikiTraceability** extension pre-configured using Docker.
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
+- Docker (v20.10+) and Docker Compose (v2.0+)
 - At least 2GB of free disk space
+- Port 8080 available on your machine
 
-## Quick Start
+## Quick Start (First Time)
 
-1. **Start the services:**
-   ```bash
-   docker-compose up -d
-   ```
+```bash
+# 1. Clone the repository (if not already done)
+git clone https://github.com/guy20ome/wikitraceability.git
+cd wikitraceability
 
-2. **Wait for initialization** (30-60 seconds):
-   ```bash
-   docker-compose logs -f mediawiki
-   ```
-   Wait for messages indicating the service is running.
+# 2. Build and start all services
+docker-compose up -d --build
 
-3. **Access MediaWiki:**
-   - Open your browser and go to: `http://localhost:8080/w`
-   - Admin login: `Admin` / `admin123`
+# 3. Wait for initialization (30-60 seconds)
+docker-compose logs -f mediawiki
+
+# 4. Access MediaWiki
+# Open: http://localhost:8080/w
+# Admin: Admin / admin123
+```
 
 ## Services
 
-- **MediaWiki**: `http://localhost:8080/w` - Main wiki interface
-- **MariaDB Database**: `database:3306` (internal, not exposed)
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| MediaWiki | `http://localhost:8080/w` | Admin / admin123 |
+| MariaDB | `database:3306` (internal) | mediawiki / mediawikipass |
 
 ## Database Credentials
 
-- Host: `database` (or `localhost` for external access)
-- Database: `mediawiki`
-- User: `mediawiki`
-- Password: `mediawikipass`
-- Root Password: `wikiroot`
+- **Host**: `database` (Docker internal) or `localhost` (external)
+- **Database**: `mediawiki`
+- **User**: `mediawiki`
+- **Password**: `mediawikipass`
+- **Root Password**: `wikiroot`
+
+## What's Pre-Installed
+
+✅ **MediaWiki 1.41** - Latest LTS version
+✅ **Semantic MediaWiki** - Latest compatible version (REL1_41 branch)
+✅ **WikiTraceability Extension** - Automatically loaded and mounted
 
 ## Common Commands
 
-### Start Services
-```bash
-docker-compose up -d
-```
+| Command | Description |
+|---------|-------------|
+| `docker-compose up -d` | Start services (detached) |
+| `docker-compose up -d --build` | Rebuild and start |
+| `docker-compose down` | Stop services |
+| `docker-compose down -v` | Stop and remove data |
+| `docker-compose logs -f mediawiki` | View MediaWiki logs |
+| `docker-compose exec mediawiki bash` | Shell access |
+| `docker-compose restart mediawiki` | Restart MediaWiki |
 
-### Stop Services
-```bash
-docker-compose down
-```
+## Using the Setup Script
 
-### View Logs
-```bash
-docker-compose logs -f mediawiki
-docker-compose logs -f database
-```
+A helper script is provided for common operations:
 
-### Restart Services
 ```bash
-docker-compose restart
-```
+# Show help
+./docker-setup.sh help
 
-### Full Cleanup (removes data)
-```bash
-docker-compose down -v
-```
+# Start services
+./docker-setup.sh up
 
-### Access MediaWiki Container Shell
-```bash
-docker-compose exec mediawiki bash
+# Stop services
+./docker-setup.sh down
+
+# View logs
+./docker-setup.sh logs
+
+# Enter container shell
+./docker-setup.sh shell
+
+# Full cleanup (removes everything)
+./docker-setup.sh clean
+
+# Rebuild from scratch
+./docker-setup.sh rebuild
 ```
 
 ## Development Workflow
 
-1. Make changes to your extension files (they're mounted as volumes)
-2. Refresh your browser to see changes
-3. For PHP changes, you may need to restart the container:
-   ```bash
-   docker-compose restart mediawiki
-   ```
+### Making Changes
+1. Edit extension files in your local `./` directory
+2. Changes are **automatically synced** to the container (read-only mount)
+3. Refresh your browser to see changes
+4. For PHP changes, restart MediaWiki: `docker-compose restart mediawiki`
 
-## Extension Loading
+### Running Database Updates
+```bash
+docker-compose exec mediawiki php /var/www/html/maintenance/update.php
+```
 
-The WikiTraceability extension is automatically mounted into the MediaWiki extensions directory and loaded via the `extension.json` configuration. Any changes to the extension files are immediately reflected in the running container.
+### Running Tests (if PHPUnit installed)
+```bash
+docker-compose exec mediawiki bash
+cd /var/www/html/extensions/WikiTraceability
+composer install --dev
+./vendor/bin/phpunit
+```
+
+## Extension Features
+
+### WikiTraceability Special Pages
+- `Special:TraceabilityProduct` - Create/edit products
+- `Special:TraceabilityTransformation` - Create/edit transformations
+- `Special:TraceabilityTree?product=ProductName` - View traceability tree
+
+### Semantic MediaWiki Features
+- All WikiTraceability data stored as SMW properties
+- Query products and transformations using SMW syntax
+- Full semantic querying capabilities
 
 ## Troubleshooting
 
 ### Container won't start
 ```bash
 docker-compose down
-docker-compose up --build
+docker-compose up --build --force-recreate
 ```
 
-### Database connection error
+### Database connection issues
 ```bash
+# Reset database completely
 docker-compose down -v
 docker-compose up -d
 ```
-This recreates the database with fresh initialization.
+
+### Extension not loading
+```bash
+# Check LocalSettings.php
+docker-compose exec mediawiki cat /var/www/html/LocalSettings.php | grep WikiTraceability
+
+# Check extension directory
+docker-compose exec mediawiki ls -la /var/www/html/extensions/WikiTraceability/
+```
 
 ### Permission issues
 ```bash
-docker-compose exec mediawiki chown -R www-data:www-data /var/www/html/w/extensions/WikiTraceability
+docker-compose exec mediawiki chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
 ```
 
-### View MediaWiki error logs
+### View MediaWiki logs
 ```bash
-docker-compose exec mediawiki tail -f /var/www/html/w/debug.log
+docker-compose exec mediawiki tail -f /var/www/html/debug.log
+```
+
+### Check SMW installation
+```bash
+docker-compose exec mediawiki php /var/www/html/extensions/SemanticMediaWiki/maintenance/rebuildData.php
+```
+
+## Configuration
+
+### Custom Admin Credentials
+Edit `docker-compose.yml` and change:
+```yaml
+environment:
+  MEDIAWIKI_ADMIN_USER: Admin
+  MEDIAWIKI_ADMIN_PASSWORD: admin123
+```
+
+### Change Port
+Edit `docker-compose.yml`:
+```yaml
+ports:
+  - "8080:80"  # Change first number to your preferred port
+```
+
+### Enable Additional Extensions
+Edit `LocalSettings2.php` and add:
+```php
+wfLoadExtension( 'ExtensionName' );
 ```
 
 ## Useful Links
 
-- [MediaWiki Official Documentation](https://www.mediawiki.org)
-- [MediaWiki API Documentation](https://www.mediawiki.org/wiki/API)
-- [Extension Development Guide](https://www.mediawiki.org/wiki/Extension_development)
+- [MediaWiki Documentation](https://www.mediawiki.org/wiki/Manual:Contents)
+- [Semantic MediaWiki](https://www.semantic-mediawiki.org/wiki/Semantic_MediaWiki)
+- [Extension Development](https://www.mediawiki.org/wiki/Manual:Extension_registration)
+- [Docker MediaWiki](https://hub.docker.com/_/mediawiki)
+
+## Cleanup
+
+To completely remove all Docker resources:
+```bash
+./docker-setup.sh clean
+# or manually:
+docker-compose down -v
+```

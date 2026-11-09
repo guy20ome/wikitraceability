@@ -1,5 +1,6 @@
 FROM mediawiki:1.41
 
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -10,34 +11,45 @@ RUN apt-get update && apt-get install -y \
     vim \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sS https://getcomposer.org/installer \
-    | php -- --install-dir=/usr/local/bin --filename=composer
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN git clone https://github.com/SemanticMediaWiki/SemanticMediaWiki.git \
-    /var/www/html/extensions/SemanticMediaWiki --branch 5.1.0
+# Clone and install Semantic MediaWiki (compatible with MW 1.41)
+RUN git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/SemanticMediaWiki.git \
+    /var/www/html/extensions/SemanticMediaWiki --depth 1 --branch REL1_41
 
 WORKDIR /var/www/html/extensions/SemanticMediaWiki
-
-RUN composer install --no-dev
+RUN composer install --no-dev --prefer-dist
 
 WORKDIR /var/www/html
 
-COPY ./includes/DatabaseMySQL.php /var/www/html/includes/libs/rdbms/database/DatabaseMySQL.php
-#COPY ./LocalSettings1.php /var/www/html/LocalSettings.php
-#RUN php ./maintenance/update.php
+# Create WikiTraceability extension directory
+RUN mkdir -p /var/www/html/extensions/WikiTraceability
 
-# Set proper permissions
-#RUN chown -R www-data:www-data /var/www/html/extensions/SemanticMediaWiki
-#RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
+# Create templates directory
+RUN mkdir -p /var/www/html/extensions/WikiTraceability/templates
 
-# Create entrypoint script to enable extension after setup
+# Set proper permissions for extension directory
+RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
+
+# Create entrypoint script
 RUN echo '#!/bin/bash\n\
 set -e\n\
-# Enable the extension if LocalSettings.php exists and is properly configured\n\
-if [ -f /var/www/html/LocalSettings.php ] && grep -q "wgDBuser" /var/www/html/LocalSettings.php; then\n\
+# Wait for database to be ready\n\
+if [ -n "$MEDIAWIKI_DB_HOST" ]; then\n\
+  echo "Waiting for database..."\n\
+  until mysql -h "$MEDIAWIKI_DB_HOST" -u "$MEDIAWIKI_DB_USER" -p"$MEDIAWIKI_DB_PASSWORD" "$MEDIAWIKI_DB_NAME" -e "SELECT 1;" 2>/dev/null; do\n\
+    sleep 2\n\
+  done\n\
+fi\n\
+# Run database updates if needed\n\
+if [ -f /var/www/html/LocalSettings.php ]; then\n\
+  php /var/www/html/maintenance/update.php --quick 2>/dev/null || true\n\
+fi\n\
+# Ensure WikiTraceability extension is loaded\n\
+if [ -f /var/www/html/LocalSettings.php ]; then\n\
   if ! grep -q "WikiTraceability" /var/www/html/LocalSettings.php; then\n\
-    echo "Enabling WikiTraceability extension..."\n\
-    echo '\''wfLoadExtension( '\''WikiTraceability'\'');'\'' >> /var/www/html/LocalSettings.php\n\
+    echo "wfLoadExtension( \'WikiTraceability\' );" >> /var/www/html/LocalSettings.php\n\
   fi\n\
 fi\n\
 # Start Apache\n\

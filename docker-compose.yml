@@ -1,6 +1,6 @@
 services:
   database:
-    image: mariadb:latest
+    image: mariadb:10.11
     container_name: mediawiki-db
     environment:
       MYSQL_ROOT_PASSWORD: wikiroot
@@ -31,21 +31,16 @@ services:
       MEDIAWIKI_DB_USER: mediawiki
       MEDIAWIKI_DB_PASSWORD: mediawikipass
       MEDIAWIKI_ADMIN_USER: Admin
-      MEDIAWIKI_ADMIN_PASSWORD: WikiTraceAdminPass2026
+      MEDIAWIKI_ADMIN_PASSWORD: admin123
+      MEDIAWIKI_SITE_NAME: WikiTraceability
     volumes:
-#      - mediawiki-data:/var/www/html
-      - ./includes:/var/www/html/extensions/WikiTraceability/includes
-      - ./resources:/var/www/html/extensions/WikiTraceability/resources
-      - ./i18n:/var/www/html/extensions/WikiTraceability/i18n
-      - ./extension.json:/var/www/html/extensions/WikiTraceability/extension.json
-      - ./LocalSettings2.php:/var/www/html/LocalSettings.php
-#      - ./includes/DatabaseMySQL.php:/var/www/html/includes/libs/rdbms/database/DatabaseMySQL.php
+      - ./:/var/www/html/extensions/WikiTraceability:ro
+      - ./LocalSettings2.php:/var/www/html/LocalSettings.php:ro
     networks:
       - mediawiki-network
 
 volumes:
   db-data:
-  mediawiki-data:
 
 networks:
   mediawiki-network:
