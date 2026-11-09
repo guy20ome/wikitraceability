@@ -4,5 +4,6 @@
   },
   "wikitraceability-desc": "Provides basic traceability product and transformation management for Semantic MediaWiki.",
   "specialpage-traceabilityproduct": "Traceability Product",
-  "specialpage-traceabilitytransformation": "Traceability Transformation"
+  "specialpage-traceabilitytransformation": "Traceability Transformation",
+  "specialpage-traceabilitytree": "Traceability Tree"
 }
