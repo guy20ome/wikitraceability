@@ -1,0 +1,29 @@
+{
+    "name": "guy20ome/wikitraceability",
+    "description": "WikiTraceability MediaWiki extension",
+    "type": "mediawiki-extension",
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "mediawiki/mediawiki-codesniffer": "^41.0",
+        "php-parallel-lint/php-parallel-lint": "^1.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "WikiTraceability\\": "includes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WikiTraceability\\Tests\\": "tests/phpunit/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "phpunit": "phpunit --colors --testdox",
+        "phpcs": "phpcs -p -s includes/ tests/",
+        "phan": "phan -d . --exclude-dir=vendor"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

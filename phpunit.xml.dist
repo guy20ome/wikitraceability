@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         bootstrap="tests/phpunit/bootstrap.php"
+         colors="true"
+         cacheDirectory=".cache/phpunit"
+         executionOrder="depends,defects"
+         requireCoverageMetadata="false"
+         beStrictAboutCoverageMetadata="false"
+         beStrictAboutOutputDuringTests="true"
+         failOnRisky="true"
+         failOnWarning="true">
+
+    <testsuites>
+        <testsuite name="WikiTraceability">
+            <directory>tests/phpunit</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">includes</directory>
+        </include>
+        <exclude>
+            <file>includes/DatabaseMySQL.php</file>
+        </exclude>
+    </source>
+
+    <php>
+        <ini name="error_reporting" value="32767"/>
+        <ini name="display_errors" value="1"/>
+        <ini name="display_startup_errors" value="1"/>
+        <ini name="log_errors" value="1"/>
+        <ini name="log_errors_max_len" value="0"/>
+        <ini name="ignore_repeated_errors" value="1"/>
+        <ini name="ignore_repeated_source" value="1"/>
+        <ini name="report_memleaks" value="1"/>
+        <ini name="html_errors" value="0"/>
+        <ini name="zend.enable_gc" value="1"/>
+    </php>
+
+    <listeners>
+        <listener class="\PHPUnit\Util\Log\TeamCity" file="php://stdout"/>
+    </listeners>
+</phpunit>
