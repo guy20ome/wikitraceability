@@ -48,33 +48,9 @@ RUN mkdir -p /var/www/html/extensions/WikiTraceability && \
 # Set proper permissions for extension directory
 RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
 
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-# Wait for database to be ready\n\
-if [ -n "$MEDIAWIKI_DB_HOST" ]; then\n\
-  echo "Waiting for database..."\n\
-  until mysql -h "$MEDIAWIKI_DB_HOST" -u "$MEDIAWIKI_DB_USER" -p"$MEDIAWIKI_DB_PASSWORD" "$MEDIAWIKI_DB_NAME" -e "SELECT 1;" 2>/dev/null; do\n\
-    sleep 2\n\
-  done\n\
-  echo "Database is ready!"\n\
-fi\n\
-# Run database updates if needed\n\
-if [ -f /var/www/html/LocalSettings.php ]; then\n\
-  echo "Running MediaWiki updates..."\n\
-  php /var/www/html/maintenance/update.php --quick 2>/dev/null || true\n\
-fi\n\
-# Ensure WikiTraceability extension is loaded\n\
-if [ -f /var/www/html/LocalSettings.php ]; then\n\
-  if ! grep -q "WikiTraceability" /var/www/html/LocalSettings.php; then\n\
-    echo "Enabling WikiTraceability extension..."\n\
-    echo "wfLoadExtension( \'WikiTraceability\' );" >> /var/www/html/LocalSettings.php\n\
-  fi\n\
-fi\n\
-# Start Apache\n\
-echo "Starting Apache..."\n\
-exec apache2-foreground\n\
-' > /entrypoint.sh && chmod +x /entrypoint.sh
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 EXPOSE 80
