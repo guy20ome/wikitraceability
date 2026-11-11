@@ -1,6 +1,6 @@
 FROM mediawiki:1.41
 
-# Install dependencies
+# Install dependencies and PHP extensions for SMW
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -9,7 +9,15 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     mariadb-client \
     vim \
-    && rm -rf /var/lib/apt/lists/*
+    # PHP extensions required by SMW and its dependencies
+    php-json \
+    php-mbstring \
+    php-xml \
+    php-curl \
+    php-intl \
+    && rm -rf /var/lib/apt/lists/* && \
+    # Enable PHP extensions
+    docker-php-ext-enable json mbstring xml curl intl
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -32,12 +40,12 @@ RUN echo "Cloning Semantic MediaWiki..." && \
 
 # Install SMW dependencies
 WORKDIR /var/www/html/extensions/SemanticMediaWiki
-RUN echo "Installing SMW dependencies..." && \
-    composer install --no-dev --ignore-platform-reqs --no-scripts 2>&1 || \
-    (echo "Composer install failed, trying minimal..." && \
-     composer install --no-dev --ignore-platform-reqs --no-scripts --prefer-lowest 2>&1) || \
-    (echo "WARNING: SMW composer install failed, continuing anyway..." && \
-     echo "SMW may work without composer dependencies")
+RUN echo "=== Installing SMW dependencies ===" && \
+    echo "PHP version:" && php -v && \
+    echo "Installed PHP modules:" && php -m | tr ' ' '\n' && \
+    echo "Running composer install..." && \
+    composer install --no-dev 2>&1 && \
+    echo "=== SMW dependencies installed successfully ==="
 
 WORKDIR /var/www/html
 
@@ -50,7 +58,9 @@ RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+    echo "Entrypoint script copied and made executable" && \
+    ls -la /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 EXPOSE 80
