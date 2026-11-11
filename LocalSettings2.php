@@ -141,7 +141,6 @@ wfLoadExtension( 'WikiTraceability' );
 
 # Enable Semantic MediaWiki
 wfLoadExtension( 'SemanticMediaWiki' );
-enableSemantics( 'localhost:8080' );
 
 # Configure SMW for full semantic support
 $smwgNamespacesWithSemanticLinks[NS_MAIN] = true;
