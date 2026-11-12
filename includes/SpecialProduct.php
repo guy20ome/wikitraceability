@@ -6,7 +6,6 @@ use SpecialPage;
 use WikiPage;
 use WikitextContent;
 use Title;
-use Hooks;
 
 class SpecialProduct extends SpecialPage {
     public function __construct() {
@@ -55,7 +54,6 @@ class SpecialProduct extends SpecialPage {
     }
 
     private function handleProductCreation( $request, $out ) {
-        $dbr = wfGetDB( DB_REPLICA );
         $productName = trim( $request->getText( 'wpProductName' ) );
 
         if ( !$productName ) {
@@ -76,20 +74,29 @@ class SpecialProduct extends SpecialPage {
         $price = $request->getText( 'wpProductPrice' );
         $category = $request->getText( 'wpProductCategory' );
 
-        // Build SMW semantic data
-        $semanticContent = "{{Product Definition\n";
-        $semanticContent .= "| ProductName = $productName\n";
-        if ( $weight ) $semanticContent .= "| ProductWeight = $weight\n";
-        if ( $weightUnit ) $semanticContent .= "| ProductWeightUnit = $weightUnit\n";
-        if ( $description ) $semanticContent .= "| ProductDescription = $description\n";
-        if ( $price ) $semanticContent .= "| ProductPrice = $price\n";
-        if ( $category ) $semanticContent .= "| ProductCategory = $category\n";
-        $semanticContent .= "}}\n";
+        $properties = [
+            'ProductName' => $productName,
+            'ProductWeight' => $weight,
+            'ProductWeightUnit' => $weightUnit,
+            'ProductDescription' => $description,
+            'ProductPrice' => $price,
+            'ProductCategory' => $category
+        ];
+        $semanticContent = '';
+        foreach ( $properties as $property => $value ) {
+            if ( $value !== '' ) {
+                $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . "]]\n";
+            }
+        }
 
         // Create or update the page
         $wikiPage = new WikiPage( $title );
         $content = new WikitextContent( $semanticContent );
-        $status = $wikiPage->doEditContent( $content, 'Created via TraceabilityProduct special page' );
+        $status = $wikiPage->doUserEditContent(
+            $content,
+            $this->getAuthority(),
+            'Created via TraceabilityProduct special page'
+        );
 
         if ( $status->isGood() ) {
             $out->addHTML( '<p class="success">Product <strong>' . htmlspecialchars( $productName ) . '</strong> created with SMW properties.</p>' );
@@ -97,5 +104,18 @@ class SpecialProduct extends SpecialPage {
         } else {
             $out->addHTML( '<p class="error">Failed to create product: ' . $status->getMessage()->text() . '</p>' );
         }
+    }
+
+    private static function escapeSemanticValue( string $value ): string {
+        return strtr( $value, [
+            '&' => '&amp;',
+            '[' => '&#91;',
+            ']' => '&#93;',
+            '|' => '&#124;',
+            '{' => '&#123;',
+            '}' => '&#125;',
+            "\r" => ' ',
+            "\n" => ' '
+        ] );
     }
 }

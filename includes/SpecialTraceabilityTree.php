@@ -17,12 +17,13 @@ class SpecialTraceabilityTree extends SpecialPage {
 
         $out->addWikiTextAsInterface( '== Traceability Tree ==\nView the traceability tree for a product.' );
 
-        $productName = trim( $subPage );
+        $productName = trim( (string)$subPage );
         if ( !$productName ) {
             $productName = $request->getText( 'product' );
         }
 
         if ( $productName ) {
+            $out->addModules( 'ext.wikitraceability' );
             $this->displayTree( $out, $productName );
         }
 
@@ -44,15 +45,8 @@ class SpecialTraceabilityTree extends SpecialPage {
     private function displayTree( $out, $productName ) {
         $out->addHTML( '<h2>Traceability Tree for: ' . htmlspecialchars( $productName ) . '</h2>' );
         
-        $out->addHTML( '<div id="traceability-tree-container" class="wikitraceability-tree-container" data-product="' . htmlspecialchars( $productName ) . '"></div>' );
-        
+        $out->addHTML( '<div id="traceability-tree-container" class="wikitraceability-tree-container" data-product="' . htmlspecialchars( $productName, ENT_QUOTES ) . '"></div>' );
         $out->addHTML( '<div id="traceability-tree-details"></div>' );
-        
-        $out->addHTML( '<script>
-            if (typeof mw !== "undefined" && mw.WikiTraceability) {
-                mw.WikiTraceability.initTree("traceability-tree-container", "' . htmlspecialchars( $productName, ENT_QUOTES ) . '");
-            }
-        </script>' );
 
         $this->displayProductInfo( $out, $productName );
     }

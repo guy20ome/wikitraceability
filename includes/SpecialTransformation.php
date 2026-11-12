@@ -65,7 +65,7 @@ class SpecialTransformation extends SpecialPage {
             return;
         }
 
-        $title = Title::newFromText( $transformationName, NS_MAIN );
+        $title = Title::newFromText( 'Transformation/' . $transformationName, NS_MAIN );
         if ( !$title ) {
             $out->addHTML( '<p class="error">Invalid transformation name.</p>' );
             return;
@@ -86,30 +86,39 @@ class SpecialTransformation extends SpecialPage {
         $inputProductsArray = array_map( 'trim', explode( ',', $inputProducts ) );
         $outputProductsArray = array_map( 'trim', explode( ',', $outputProducts ) );
 
-        $semanticContent = "{{Transformation Definition\n";
-        $semanticContent .= "| TransformationName = $transformationName\n";
-        if ( $transformationType ) $semanticContent .= "| TransformationType = $transformationType\n";
-        if ( $inputQuantity ) $semanticContent .= "| InputQuantityPerUnit = $inputQuantity\n";
-        if ( $outputQuantity ) $semanticContent .= "| OutputQuantityPerUnit = $outputQuantity\n";
-        if ( $description ) $semanticContent .= "| TransformationDescription = $description\n";
+        $properties = [
+            'TransformationName' => $transformationName,
+            'TransformationType' => $transformationType,
+            'InputQuantityPerUnit' => $inputQuantity,
+            'OutputQuantityPerUnit' => $outputQuantity,
+            'TransformationDescription' => $description
+        ];
+        $semanticContent = '';
+        foreach ( $properties as $property => $value ) {
+            if ( $value !== '' ) {
+                $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . "]]\n";
+            }
+        }
 
         foreach ( $inputProductsArray as $product ) {
             if ( $product ) {
-                $semanticContent .= "| HasInputProducts = $product\n";
+                $semanticContent .= '[[HasInputProducts::' . self::escapeSemanticValue( $product ) . "]]\n";
             }
         }
 
         foreach ( $outputProductsArray as $product ) {
             if ( $product ) {
-                $semanticContent .= "| HasOutputProducts = $product\n";
+                $semanticContent .= '[[HasOutputProducts::' . self::escapeSemanticValue( $product ) . "]]\n";
             }
         }
 
-        $semanticContent .= "}}\n";
-
         $wikiPage = new WikiPage( $title );
         $content = new WikitextContent( $semanticContent );
-        $status = $wikiPage->doEditContent( $content, 'Created via TraceabilityTransformation special page' );
+        $status = $wikiPage->doUserEditContent(
+            $content,
+            $this->getAuthority(),
+            'Created via TraceabilityTransformation special page'
+        );
 
         if ( $status->isGood() ) {
             $out->addHTML( '<p class="success">Transformation <strong>' . htmlspecialchars( $transformationName ) . '</strong> created with SMW properties.</p>' );
@@ -117,5 +126,18 @@ class SpecialTransformation extends SpecialPage {
         } else {
             $out->addHTML( '<p class="error">Failed to create transformation: ' . $status->getMessage()->text() . '</p>' );
         }
+    }
+
+    private static function escapeSemanticValue( string $value ): string {
+        return strtr( $value, [
+            '&' => '&amp;',
+            '[' => '&#91;',
+            ']' => '&#93;',
+            '|' => '&#124;',
+            '{' => '&#123;',
+            '}' => '&#125;',
+            "\r" => ' ',
+            "\n" => ' '
+        ] );
     }
 }

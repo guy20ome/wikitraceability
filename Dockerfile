@@ -1,6 +1,6 @@
 FROM mediawiki:1.41
 
-# Install dependencies and PHP extensions for SMW
+# Install build and runtime tools for SMW
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -9,15 +9,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     mariadb-client \
     vim \
-    # PHP extensions required by SMW and its dependencies
-    php-json \
-    php-mbstring \
-    php-xml \
-    php-curl \
-    php-intl \
-    && rm -rf /var/lib/apt/lists/* && \
-    # Enable PHP extensions
-    docker-php-ext-enable json mbstring xml curl intl
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -40,11 +32,13 @@ RUN echo "Cloning Semantic MediaWiki..." && \
 
 # Install SMW dependencies
 WORKDIR /var/www/html/extensions/SemanticMediaWiki
+# Dev dependencies are excluded from installation and audited separately.
 RUN echo "=== Installing SMW dependencies ===" && \
     echo "PHP version:" && php -v && \
     echo "Installed PHP modules:" && php -m | tr ' ' '\n' && \
     echo "Running composer install..." && \
-    composer install --no-dev 2>&1 && \
+    composer install --no-dev --no-blocking --no-interaction 2>&1 && \
+    composer audit --no-dev 2>&1 && \
     echo "=== SMW dependencies installed successfully ==="
 
 WORKDIR /var/www/html

@@ -31,7 +31,7 @@ services:
       MEDIAWIKI_DB_USER: mediawiki
       MEDIAWIKI_DB_PASSWORD: mediawikipass
       MEDIAWIKI_ADMIN_USER: Admin
-      MEDIAWIKI_ADMIN_PASSWORD: admin123
+      MEDIAWIKI_ADMIN_PASSWORD: WikiTraceAdminPass2026
       MEDIAWIKI_SITE_NAME: WikiTraceability
     volumes:
       - ./:/var/www/html/extensions/WikiTraceability:ro

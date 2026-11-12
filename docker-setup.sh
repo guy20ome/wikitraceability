@@ -7,40 +7,40 @@ set -e
 case "${1:-help}" in
   up)
     echo "Starting MediaWiki services..."
-    docker-compose up -d
+    docker compose up -d --build
     echo "Waiting for services to be ready..."
     sleep 10
     echo "✓ Services started!"
-    echo "MediaWiki is available at: http://localhost:8080/w"
-    echo "Admin user: Admin / admin123"
+    echo "MediaWiki is available at: http://localhost:8080"
+    echo "Admin user: Admin / WikiTraceAdminPass2026"
     ;;
   
   down)
     echo "Stopping MediaWiki services..."
-    docker-compose down
+    docker compose down
     echo "✓ Services stopped"
     ;;
   
   logs)
-    docker-compose logs -f mediawiki
+    docker compose logs -f mediawiki
     ;;
   
   shell)
     echo "Entering MediaWiki container shell..."
-    docker-compose exec mediawiki bash
+    docker compose exec mediawiki bash
     ;;
   
   restart)
     echo "Restarting MediaWiki..."
-    docker-compose restart mediawiki
+    docker compose restart mediawiki
     echo "✓ MediaWiki restarted"
     ;;
   
   rebuild)
     echo "Rebuilding Docker image..."
-    docker-compose down
-    docker-compose build --no-cache
-    docker-compose up -d
+    docker compose down
+    docker compose build --no-cache
+    docker compose up -d
     echo "✓ Image rebuilt and services started"
     ;;
   
@@ -48,7 +48,7 @@ case "${1:-help}" in
     echo "WARNING: This will remove all containers, images, and volumes."
     read -p "Are you sure? (yes/no): " confirm
     if [ "$confirm" = "yes" ]; then
-      docker-compose down -v
+      docker compose down -v
       docker system prune -f
       echo "✓ Cleanup complete"
     else
@@ -57,7 +57,7 @@ case "${1:-help}" in
     ;;
   
   status)
-    docker-compose ps
+    docker compose ps
     ;;
   
   *)

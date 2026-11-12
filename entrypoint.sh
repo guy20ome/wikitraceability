@@ -13,8 +13,15 @@ fi
 
 # Run database updates if needed
 if [ -f /var/www/html/LocalSettings.php ]; then
-  echo "Running MediaWiki updates..."
-  php /var/www/html/maintenance/update.php --quick 2>/dev/null || true
+  table_count=$(mysql -N -B -h "$MEDIAWIKI_DB_HOST" -u "$MEDIAWIKI_DB_USER" -p"$MEDIAWIKI_DB_PASSWORD" "$MEDIAWIKI_DB_NAME" \
+    -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE();")
+
+  if [ "$table_count" -eq 0 ]; then
+    echo "MediaWiki database is empty; run ./init-mediawiki.sh to initialize it."
+  else
+    echo "Running MediaWiki updates..."
+    php /var/www/html/maintenance/run.php update --quick
+  fi
 fi
 
 # Ensure WikiTraceability extension is loaded

@@ -16,21 +16,24 @@ git clone https://github.com/guy20ome/wikitraceability.git
 cd wikitraceability
 
 # 2. Build and start all services
-docker-compose up -d --build
+docker compose up -d --build
 
-# 3. Wait for initialization (30-60 seconds)
-docker-compose logs -f mediawiki
+# 3. Initialize the database and Semantic MediaWiki
+./init-mediawiki.sh
 
-# 4. Access MediaWiki
-# Open: http://localhost:8080/w
-# Admin: Admin / admin123
+# 4. Wait for the site to be ready
+docker compose logs -f mediawiki
+
+# 5. Access MediaWiki
+# Open: http://localhost:8080
+# Admin: Admin / WikiTraceAdminPass2026
 ```
 
 ## Services
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| MediaWiki | `http://localhost:8080/w` | Admin / admin123 |
+| MediaWiki | `http://localhost:8080` | Admin / WikiTraceAdminPass2026 |
 | MariaDB | `database:3306` (internal) | mediawiki / mediawikipass |
 
 ## Database Credentials
@@ -44,20 +47,20 @@ docker-compose logs -f mediawiki
 ## What's Pre-Installed
 
 ✅ **MediaWiki 1.41** - Latest LTS version
-✅ **Semantic MediaWiki** - Latest compatible version (REL1_41 branch)
+✅ **Semantic MediaWiki 5.1.0** - Compatible with MediaWiki 1.41
 ✅ **WikiTraceability Extension** - Automatically loaded and mounted
 
 ## Common Commands
 
 | Command | Description |
 |---------|-------------|
-| `docker-compose up -d` | Start services (detached) |
-| `docker-compose up -d --build` | Rebuild and start |
-| `docker-compose down` | Stop services |
-| `docker-compose down -v` | Stop and remove data |
-| `docker-compose logs -f mediawiki` | View MediaWiki logs |
-| `docker-compose exec mediawiki bash` | Shell access |
-| `docker-compose restart mediawiki` | Restart MediaWiki |
+| `docker compose up -d` | Start services (detached) |
+| `docker compose up -d --build` | Rebuild and start |
+| `docker compose down` | Stop services |
+| `docker compose down -v` | Stop and remove data |
+| `docker compose logs -f mediawiki` | View MediaWiki logs |
+| `docker compose exec mediawiki bash` | Shell access |
+| `docker compose restart mediawiki` | Restart MediaWiki |
 
 ## Using the Setup Script
 
@@ -67,8 +70,9 @@ A helper script is provided for common operations:
 # Show help
 ./docker-setup.sh help
 
-# Start services
+# Start services and initialize the database on first run
 ./docker-setup.sh up
+./init-mediawiki.sh
 
 # Stop services
 ./docker-setup.sh down
@@ -92,16 +96,16 @@ A helper script is provided for common operations:
 1. Edit extension files in your local `./` directory
 2. Changes are **automatically synced** to the container (read-only mount)
 3. Refresh your browser to see changes
-4. For PHP changes, restart MediaWiki: `docker-compose restart mediawiki`
+4. For PHP changes, restart MediaWiki: `docker compose restart mediawiki`
 
 ### Running Database Updates
 ```bash
-docker-compose exec mediawiki php /var/www/html/maintenance/update.php
+docker compose exec mediawiki php /var/www/html/maintenance/run.php update
 ```
 
 ### Running Tests (if PHPUnit installed)
 ```bash
-docker-compose exec mediawiki bash
+docker compose exec mediawiki bash
 cd /var/www/html/extensions/WikiTraceability
 composer install --dev
 ./vendor/bin/phpunit
@@ -123,39 +127,40 @@ composer install --dev
 
 ### Container won't start
 ```bash
-docker-compose down
-docker-compose up --build --force-recreate
+docker compose down
+docker compose up --build --force-recreate
 ```
 
 ### Database connection issues
 ```bash
-# Reset database completely
-docker-compose down -v
-docker-compose up -d
+# Reset database completely (removes all wiki data)
+docker compose down -v
+docker compose up -d
+./init-mediawiki.sh
 ```
 
 ### Extension not loading
 ```bash
 # Check LocalSettings.php
-docker-compose exec mediawiki cat /var/www/html/LocalSettings.php | grep WikiTraceability
+docker compose exec mediawiki cat /var/www/html/LocalSettings.php | grep WikiTraceability
 
 # Check extension directory
-docker-compose exec mediawiki ls -la /var/www/html/extensions/WikiTraceability/
+docker compose exec mediawiki ls -la /var/www/html/extensions/WikiTraceability/
 ```
 
 ### Permission issues
 ```bash
-docker-compose exec mediawiki chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
+docker compose exec mediawiki chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
 ```
 
 ### View MediaWiki logs
 ```bash
-docker-compose exec mediawiki tail -f /var/www/html/debug.log
+docker compose exec mediawiki tail -f /var/www/html/debug.log
 ```
 
 ### Check SMW installation
 ```bash
-docker-compose exec mediawiki php /var/www/html/extensions/SemanticMediaWiki/maintenance/rebuildData.php
+docker compose exec mediawiki php /var/www/html/extensions/SemanticMediaWiki/maintenance/rebuildData.php
 ```
 
 ## Configuration
@@ -165,7 +170,7 @@ Edit `docker-compose.yml` and change:
 ```yaml
 environment:
   MEDIAWIKI_ADMIN_USER: Admin
-  MEDIAWIKI_ADMIN_PASSWORD: admin123
+  MEDIAWIKI_ADMIN_PASSWORD: WikiTraceAdminPass2026
 ```
 
 ### Change Port
@@ -194,5 +199,5 @@ To completely remove all Docker resources:
 ```bash
 ./docker-setup.sh clean
 # or manually:
-docker-compose down -v
+docker compose down -v
 ```
