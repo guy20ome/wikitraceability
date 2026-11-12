@@ -56,6 +56,7 @@ class ExtensionManifestTest extends TestCase
 
         $expectedClasses = [
             'WikiTraceability\\Traceability',
+            'WikiTraceability\\ApiOpenFoodFacts',
             'WikiTraceability\\SpecialProduct',
             'WikiTraceability\\SpecialTransformation',
             'WikiTraceability\\SpecialTraceabilityTree'
@@ -91,6 +92,14 @@ class ExtensionManifestTest extends TestCase
         $this->assertEquals( 'WikiTraceability\\SpecialTraceabilityTree', $specialPages['TraceabilityTree'] );
     }
 
+    public function testOpenFoodFactsApiModule()
+    {
+        $this->assertSame(
+            'WikiTraceability\\ApiOpenFoodFacts',
+            $this->manifest['APIModules']['wikitraceabilityopenfoodfacts']
+        );
+    }
+
     public function testResourceModules()
     {
         $this->assertArrayHasKey( 'ResourceModules', $this->manifest );
@@ -118,6 +127,10 @@ class ExtensionManifestTest extends TestCase
         $this->assertArrayHasKey( 'Hooks', $this->manifest );
         $hooks = $this->manifest['Hooks'];
 
+        $this->assertSame(
+            'WikiTraceability\\Traceability::onMessagesPreLoad',
+            $hooks['MessagesPreLoad']
+        );
         $this->assertArrayHasKey( 'OutputPageBeforeHTML', $hooks );
         $this->assertEquals( 
             'WikiTraceability\\Traceability::onOutputPageBeforeHTML',

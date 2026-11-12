@@ -47,4 +47,12 @@ A minimal MediaWiki extension scaffold has been added with:
 - `i18n/en.json`
 - `i18n/WikiTraceability.alias.php`
 
+## Open Food Facts product lookup
+
+The wiki homepage opens the Traceability Product page, which can search Open Food Facts by product name or barcode via its Search-a-licious API. Search is explicit (not performed while typing); selecting a result fills the product name, brand, barcode, quantity, category, and ingredient description. Review the community-contributed data before creating the wiki product. Price is not provided by this lookup.
+
+Products imported from Open Food Facts retain source and ODbL metadata, including a product link when a barcode is available. The lookup is read-only and uses the free Open Food Facts API; searches are rate-limited by the service, so avoid repeated searches.
+
+Open Food Facts asks application developers to describe their integration in its [API usage form](https://docs.google.com/forms/d/e/1FAIpQLSdIE3D8qvjC_zRJw1W8OmuHhsWJ_NSckiiniAHlfaVwUZCziQ/viewform).
+
 Next step: install the extension into a MediaWiki site and wire Semantic MediaWiki data types for Product and Transformation.

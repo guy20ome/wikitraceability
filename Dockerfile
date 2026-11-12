@@ -52,7 +52,8 @@ RUN chown -R www-data:www-data /var/www/html/extensions/WikiTraceability
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && \
+RUN sed -i 's/\r$//' /entrypoint.sh && \
+    chmod +x /entrypoint.sh && \
     echo "Entrypoint script copied and made executable" && \
     ls -la /entrypoint.sh
 

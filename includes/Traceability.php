@@ -21,6 +21,12 @@ class Traceability {
         }
     }
 
+    public static function onMessagesPreLoad( string $title, &$message, string $code ): void {
+        if ( strtolower( $title ) === 'mainpage' ) {
+            $message = 'Special:TraceabilityProduct';
+        }
+    }
+
     private static function isProductPage( string $pageName ): bool {
         if ( class_exists( '\SMW\StoreFactory' ) ) {
             $store = \SMW\StoreFactory::getStore();

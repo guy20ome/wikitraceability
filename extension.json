@@ -9,6 +9,7 @@
   "manifest_version": 2,
   "AutoloadClasses": {
     "WikiTraceability\\Traceability": "includes/Traceability.php",
+    "WikiTraceability\\ApiOpenFoodFacts": "includes/ApiOpenFoodFacts.php",
     "WikiTraceability\\SpecialProduct": "includes/SpecialProduct.php",
     "WikiTraceability\\SpecialTransformation": "includes/SpecialTransformation.php",
     "WikiTraceability\\SpecialTraceabilityTree": "includes/SpecialTraceabilityTree.php"
@@ -24,6 +25,9 @@
     "TraceabilityTransformation": "WikiTraceability\\SpecialTransformation",
     "TraceabilityTree": "WikiTraceability\\SpecialTraceabilityTree"
   },
+  "APIModules": {
+    "wikitraceabilityopenfoodfacts": "WikiTraceability\\ApiOpenFoodFacts"
+  },
   "ResourceModules": {
     "ext.wikitraceability": {
       "scripts": "resources/src/Traceability.js",
@@ -34,6 +38,7 @@
     }
   },
   "Hooks": {
+    "MessagesPreLoad": "WikiTraceability\\Traceability::onMessagesPreLoad",
     "OutputPageBeforeHTML": "WikiTraceability\\Traceability::onOutputPageBeforeHTML"
   },
   "ExtensionFunctions": [

@@ -15,6 +15,14 @@ class TraceabilityTest extends TestCase
         $this->assertNull( Traceability::init() );
     }
 
+    public function testMainPageMessagePointsToProductSearch()
+    {
+        $message = null;
+        Traceability::onMessagesPreLoad( 'Mainpage', $message, 'en' );
+
+        $this->assertSame( 'Special:TraceabilityProduct', $message );
+    }
+
     public function testRenderTraceabilityTree()
     {
         $productName = 'TestProduct';

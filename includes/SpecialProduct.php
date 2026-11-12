@@ -15,6 +15,7 @@ class SpecialProduct extends SpecialPage {
     public function execute( $subPage ) {
         $this->setHeaders();
         $out = $this->getOutput();
+        $out->addModules( 'ext.wikitraceability' );
 
         $out->addWikiTextAsInterface( '== Product entry ==\nCreate or edit traceability products with Semantic MediaWiki integration.' );
 
@@ -31,10 +32,29 @@ class SpecialProduct extends SpecialPage {
     }
 
     private function displayProductForm( $out ) {
-        $form = '<form method="post" class="mw-htmlform">'
+        $form = '<section class="wikitraceability-off-lookup" aria-labelledby="off-lookup-heading">'
+            . '<h2 id="off-lookup-heading">Find an existing food product</h2>'
+            . '<p>Search Open Food Facts by product name or barcode. Search only runs when you submit this form.</p>'
+            . '<form id="wikitraceability-off-search">'
+            . '<label for="wikitraceability-off-search-term">Product name or barcode</label><br />'
+            . '<input id="wikitraceability-off-search-term" type="search" class="mw-htmlform-field" minlength="2" maxlength="100" required /> '
+            . '<button type="submit" class="mw-htmlform-submit">Search Open Food Facts</button>'
+            . '</form>'
+            . '<p class="wikitraceability-off-attribution">Product data from '
+            . '<a href="https://world.openfoodfacts.org/" target="_blank" rel="noopener noreferrer">Open Food Facts</a>, '
+            . 'available under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer">Open Database License (ODbL)</a>. '
+            . 'Data is community-contributed; please verify it.</p>'
+            . '<div id="wikitraceability-off-results" aria-live="polite"></div>'
+            . '</section>'
+            . '<form method="post" class="mw-htmlform">'
             . '<input type="hidden" name="wpAction" value="create" />'
+            . '<input id="wpProductSource" name="wpProductSource" type="hidden" value="" />'
             . '<label for="wpProductName">Product Name</label><br />'
             . '<input id="wpProductName" name="wpProductName" type="text" class="mw-htmlform-field" required /><br />'
+            . '<label for="wpProductBrand">Brand</label><br />'
+            . '<input id="wpProductBrand" name="wpProductBrand" type="text" class="mw-htmlform-field" /><br />'
+            . '<label for="wpProductBarcode">Barcode</label><br />'
+            . '<input id="wpProductBarcode" name="wpProductBarcode" type="text" class="mw-htmlform-field" /><br />'
             . '<label for="wpProductWeight">Weight</label><br />'
             . '<input id="wpProductWeight" name="wpProductWeight" type="number" step="any" class="mw-htmlform-field" /><br />'
             . '<label for="wpProductWeightUnit">Weight Unit</label><br />'
@@ -70,23 +90,41 @@ class SpecialProduct extends SpecialPage {
 
         $weight = $request->getText( 'wpProductWeight' );
         $weightUnit = $request->getText( 'wpProductWeightUnit' );
+        $brand = $request->getText( 'wpProductBrand' );
+        $barcode = $request->getText( 'wpProductBarcode' );
+        $source = $request->getText( 'wpProductSource' );
         $description = $request->getText( 'wpProductDescription' );
         $price = $request->getText( 'wpProductPrice' );
         $category = $request->getText( 'wpProductCategory' );
 
         $properties = [
             'ProductName' => $productName,
+            'ProductBrand' => $brand,
+            'ProductBarcode' => $barcode,
             'ProductWeight' => $weight,
             'ProductWeightUnit' => $weightUnit,
             'ProductDescription' => $description,
             'ProductPrice' => $price,
             'ProductCategory' => $category
         ];
+        if ( $source === 'Open Food Facts' ) {
+            $properties['ProductSource'] = 'Open Food Facts';
+            $properties['ProductDataLicense'] = 'ODbL';
+            if ( $barcode !== '' ) {
+                $properties['ProductSourceURL'] = 'https://world.openfoodfacts.org/product/' . rawurlencode( $barcode );
+            }
+        }
         $semanticContent = '';
         foreach ( $properties as $property => $value ) {
             if ( $value !== '' ) {
                 $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . "]]\n";
             }
+        }
+        if ( $source === 'Open Food Facts' ) {
+            $sourceLink = $barcode !== ''
+                ? ' [https://world.openfoodfacts.org/product/' . rawurlencode( $barcode ) . ' Open Food Facts]'
+                : ' Open Food Facts';
+            $semanticContent .= 'Product data sourced from' . $sourceLink . " (ODbL).\n";
         }
 
         // Create or update the page

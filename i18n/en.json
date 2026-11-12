@@ -5,5 +5,8 @@
   "wikitraceability-desc": "Provides basic traceability product and transformation management for Semantic MediaWiki.",
   "specialpage-traceabilityproduct": "Traceability Product",
   "specialpage-traceabilitytransformation": "Traceability Transformation",
-  "specialpage-traceabilitytree": "Traceability Tree"
+  "specialpage-traceabilitytree": "Traceability Tree",
+  "wikitraceability-openfoodfacts-invalid-search": "Enter a search term between 2 and 100 characters.",
+  "wikitraceability-openfoodfacts-unavailable": "Open Food Facts could not be reached. Please try again later.",
+  "wikitraceability-openfoodfacts-invalid-response": "Open Food Facts returned data in an unexpected format."
 }
