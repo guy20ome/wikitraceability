@@ -14,6 +14,7 @@ class SpecialTransformationTest extends TestCase
     private $outputMock;
     private $requestMock;
     private $userMock;
+    private $prefilledOutputProduct = '';
 
     protected function setUp(): void
     {
@@ -23,14 +24,20 @@ class SpecialTransformationTest extends TestCase
         $this->outputMock->method( 'addWikiTextAsInterface' )->willReturn( null );
         $this->outputMock->method( 'addHTML' )->willReturn( null );
 
-        $this->requestMock = $this->createMock( \stdClass::class );
+        $this->requestMock = $this->getMockBuilder( \WebRequest::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( [ 'getText', 'getArray', 'getVal', 'wasPosted' ] )
+            ->getMock();
         $this->requestMock->method( 'getText' )->willReturnCallback( function ( $key ) {
             switch ( $key ) {
                 case 'wpAction': return null;
                 case 'wpTransformationName': return '';
+                case 'wpOutputProducts': return $this->prefilledOutputProduct;
                 default: return null;
             }
         } );
+        $this->requestMock->method( 'getArray' )->willReturn( [] );
+        $this->requestMock->method( 'wasPosted' )->willReturn( false );
 
         $this->userMock = $this->createMock( \stdClass::class );
         $this->userMock->method( 'isRegistered' )->willReturn( true );
@@ -148,7 +155,7 @@ class SpecialTransformationTest extends TestCase
         $this->assertStringContainsString( 'wpOutputQuantityPerUnit', $html );
     }
 
-    public function testInputProductsFieldAcceptsCommaSeparated()
+    public function testProductFieldsStartWithOneInputAndOutputAndCanBeAdded()
     {
         $html = '';
         $this->outputMock->method( 'addHTML' )->will( $this->returnCallback( function ( $content ) use ( &$html ) {
@@ -157,20 +164,28 @@ class SpecialTransformationTest extends TestCase
 
         $this->specialPage->execute( '' );
 
-        $this->assertStringContainsString( 'comma-separated', $html );
-        $this->assertStringContainsString( 'wpInputProducts', $html );
+        $this->assertSame( 1, substr_count( $html, 'name="wpInputProducts[]"' ) );
+        $this->assertSame( 1, substr_count( $html, 'name="wpOutputProducts[]"' ) );
+        $this->assertStringContainsString( 'data-add-product="input"', $html );
+        $this->assertStringContainsString( 'data-add-product="output"', $html );
+        $this->assertSame( 2, substr_count( $html, 'data-remove-product' ) );
+        $this->assertSame( 2, substr_count( $html, 'data-remove-product aria-label=' ) );
+        $this->assertSame( 2, substr_count( $html, ' disabled' ) );
+        $this->assertStringContainsString( 'role="listbox"', $html );
+        $this->assertStringContainsString( 'aria-autocomplete="list"', $html );
     }
 
-    public function testOutputProductsFieldAcceptsCommaSeparated()
+    public function testOutputProductCanBePrefilledFromRequest()
     {
         $html = '';
+        $this->prefilledOutputProduct = 'Wheat';
         $this->outputMock->method( 'addHTML' )->will( $this->returnCallback( function ( $content ) use ( &$html ) {
             $html = $content;
         } ) );
 
         $this->specialPage->execute( '' );
 
-        $this->assertStringContainsString( 'comma-separated', $html );
-        $this->assertStringContainsString( 'wpOutputProducts', $html );
+        $this->assertStringContainsString( 'name="wpOutputProducts[]"', $html );
+        $this->assertStringContainsString( 'value="Wheat"', $html );
     }
 }

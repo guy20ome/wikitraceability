@@ -92,6 +92,13 @@ class ExtensionManifestTest extends TestCase
         $this->assertEquals( 'WikiTraceability\\SpecialTraceabilityTree', $specialPages['TraceabilityTree'] );
     }
 
+    public function testRegisteredUsersCanDeleteTraceabilityEntities()
+    {
+        $right = 'wikitraceability-delete';
+        $this->assertContains( $right, $this->manifest['AvailableRights'] );
+        $this->assertTrue( $this->manifest['GroupPermissions']['user'][$right] );
+    }
+
     public function testOpenFoodFactsApiModule()
     {
         $this->assertSame(

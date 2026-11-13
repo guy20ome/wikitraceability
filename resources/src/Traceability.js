@@ -11,6 +11,8 @@
         this.container = typeof container === 'string' ?
             document.getElementById( container ) : container;
         this.productName = productName;
+        this.canEditProducts = this.container &&
+            this.container.getAttribute( 'data-can-edit' ) === 'true';
         this.init();
     };
 
@@ -93,7 +95,10 @@
             var html = '<div class="traceability-tree">';
             html += this.buildProductNode( treeData );
             if ( !treeData.transformations.length ) {
-                html += '<p>No transformations found for this product.</p>';
+                html += '<p><a href="' + this.escapeHtml( mw.util.getUrl(
+                    'Special:TraceabilityTransformation',
+                    { wpOutputProducts: treeData.name }
+                ) ) + '">No transformations found. Add a transformation for this product.</a></p>';
             }
             html += '</div>';
             return html;
@@ -101,8 +106,11 @@
 
         buildProductNode: function ( product ) {
             var html = '<div class="traceability-product-branch">';
+            var productUrl = this.canEditProducts ?
+                mw.util.getUrl( 'Special:TraceabilityProduct', { product: product.name } ) :
+                mw.util.getUrl( product.name );
             html += '<a class="traceability-node traceability-node-link traceability-product" href="' +
-                this.escapeHtml( mw.util.getUrl( product.name ) ) + '">';
+                this.escapeHtml( productUrl ) + '">';
             html += '<span class="traceability-node-name">' + this.escapeHtml( product.name ) + '</span>';
             html += '<div class="traceability-node-details">Product</div></a>';
 
@@ -215,6 +223,292 @@
             } );
         },
 
+        initLocalProductLookup: function () {
+            var searchForm = document.getElementById( 'wikitraceability-local-search' );
+            var searchInput = document.getElementById( 'wikitraceability-local-search-term' );
+            var results = document.getElementById( 'wikitraceability-local-results' );
+
+            if ( !searchForm || !searchInput || !results || searchForm.wikitraceabilityLocalSearchBound ) {
+                return;
+            }
+            searchForm.wikitraceabilityLocalSearchBound = true;
+            var searchButton = searchForm.querySelector( 'button[type="submit"]' );
+
+            searchForm.addEventListener( 'submit', function ( event ) {
+                event.preventDefault();
+                var term = searchInput.value.trim().replace( /[^\p{L}\p{N}\s-]/gu, '' );
+                if ( term.length < 2 ) {
+                    results.textContent = 'Enter at least two letters or numbers to search.';
+                    return;
+                }
+
+                searchButton.disabled = true;
+                results.textContent = 'Searching this wiki...';
+                new mw.Api().get( {
+                    action: 'ask',
+                    query: '[[ProductName::+]]|?ProductName|limit=500'
+                } ).then( function ( data ) {
+                    var products = data && data.query && data.query.results || {};
+                    var pages = Object.keys( products ).map( function ( title ) {
+                        var result = products[ title ];
+                        var productName = result.printouts &&
+                            result.printouts.ProductName && result.printouts.ProductName[ 0 ];
+                        return productName && productName.fulltext || result.fulltext || title;
+                    } ).filter( function ( productName ) {
+                        return productName.toLowerCase().indexOf( term.toLowerCase() ) !== -1;
+                    } ).slice( 0, 10 );
+                    results.textContent = '';
+                    if ( !pages.length ) {
+                        results.textContent = 'No matching products found in this wiki.';
+                        return;
+                    }
+
+                    var list = document.createElement( 'ul' );
+                    pages.forEach( function ( productName ) {
+                        var item = document.createElement( 'li' );
+                        var link = document.createElement( 'a' );
+                        link.href = mw.util.getUrl( productName );
+                        link.textContent = productName;
+                        item.appendChild( link );
+                        list.appendChild( item );
+                    } );
+                    results.appendChild( list );
+                }, function () {
+                    results.textContent = 'Could not search products in this wiki. Please try again.';
+                } ).then( function () {
+                    searchButton.disabled = false;
+                } );
+            } );
+        },
+
+        initTransformationProductSelectors: function () {
+            var form = document.querySelector( '.wikitraceability-transformation-form' );
+            var status = document.getElementById( 'wikitraceability-product-suggestions-status' );
+
+            if ( !form || !status || form.wikitraceabilityProductSelectorsBound ) {
+                return;
+            }
+            form.wikitraceabilityProductSelectorsBound = true;
+            var catalogPromise = null;
+            var products = [];
+
+            function loadProducts() {
+                if ( !catalogPromise ) {
+                    catalogPromise = new mw.Api().get( {
+                        action: 'ask',
+                        query: '[[ProductName::+]]|?ProductName|limit=500'
+                    } ).then( function ( data ) {
+                        var results = data && data.query && data.query.results || {};
+                        products = Object.keys( results ).map( function ( title ) {
+                            var result = results[ title ];
+                            var productName = result.printouts &&
+                                result.printouts.ProductName && result.printouts.ProductName[ 0 ];
+                            return productName && productName.fulltext || result.fulltext || title;
+                        } );
+                        return products;
+                    }, function () {
+                        catalogPromise = null;
+                        throw new Error( 'Could not load products.' );
+                    } );
+                }
+                return catalogPromise;
+            }
+
+            function updateSuggestions( input ) {
+                var term = input.value.trim();
+                var suggestionList = form.querySelector( '#' + input.getAttribute( 'aria-controls' ) );
+                suggestionList.textContent = '';
+                suggestionList.hidden = true;
+                input.setAttribute( 'aria-expanded', 'false' );
+                input.removeAttribute( 'aria-activedescendant' );
+                if ( term.length < 3 ) {
+                    status.textContent = 'Type at least 3 letters to find products.';
+                    return;
+                }
+                status.textContent = 'Loading product suggestions...';
+                loadProducts().then( function ( catalog ) {
+                    if ( input.value.trim().length < 3 ) {
+                        return;
+                    }
+                    var currentTerm = input.value.trim().toLowerCase();
+                    var matches = catalog.filter( function ( productName ) {
+                        return productName.toLowerCase().indexOf( currentTerm ) !== -1;
+                    } ).slice( 0, 20 );
+                    suggestionList.textContent = '';
+                    matches.forEach( function ( productName, index ) {
+                        var option = document.createElement( 'div' );
+                        option.id = suggestionList.id + '-option-' + index;
+                        option.className = 'wikitraceability-product-suggestion';
+                        option.setAttribute( 'role', 'option' );
+                        option.setAttribute( 'aria-selected', 'false' );
+                        option.textContent = productName;
+                        suggestionList.appendChild( option );
+                    } );
+                    suggestionList.hidden = !matches.length;
+                    input.setAttribute( 'aria-expanded', matches.length ? 'true' : 'false' );
+                    status.textContent = matches.length ?
+                        'Select a matching product from the suggestions.' :
+                        'No matching products found.';
+                }, function () {
+                    status.textContent = 'Could not load product suggestions. Please try again.';
+                } );
+            }
+
+            function updateProductRows( section, direction ) {
+                var rows = section.querySelector( '.wikitraceability-product-rows' );
+                var productRows = Array.prototype.slice.call( rows.children );
+                var label = direction === 'input' ? 'Input' : 'Output';
+
+                productRows.forEach( function ( row, index ) {
+                    var input = row.querySelector( '.wikitraceability-product-selector' );
+                    var rowLabel = row.querySelector( 'label' );
+                    var suggestionList = row.querySelector( '.wikitraceability-product-suggestions' );
+                    var removeButton = row.querySelector( '[data-remove-product]' );
+                    var inputId = 'wp' + label + 'Products-' + index;
+
+                    input.id = inputId;
+                    input.setAttribute( 'aria-controls', inputId + '-suggestions' );
+                    rowLabel.htmlFor = inputId;
+                    rowLabel.textContent = label + ' product ' + ( index + 1 );
+                    suggestionList.id = inputId + '-suggestions';
+                    suggestionList.textContent = '';
+                    suggestionList.hidden = true;
+                    input.setAttribute( 'aria-expanded', 'false' );
+                    input.removeAttribute( 'aria-activedescendant' );
+                    removeButton.setAttribute(
+                        'aria-label',
+                        'Remove ' + direction + ' product ' + ( index + 1 )
+                    );
+                    removeButton.disabled = productRows.length === 1;
+                } );
+            }
+
+            form.addEventListener( 'input', function ( event ) {
+                if ( event.target.classList.contains( 'wikitraceability-product-selector' ) ) {
+                    updateSuggestions( event.target );
+                }
+            } );
+
+            form.addEventListener( 'mousedown', function ( event ) {
+                if ( event.target.closest( '.wikitraceability-product-suggestion' ) ) {
+                    event.preventDefault();
+                }
+            } );
+
+            form.addEventListener( 'click', function ( event ) {
+                var suggestion = event.target.closest( '.wikitraceability-product-suggestion' );
+                if ( suggestion ) {
+                    var row = suggestion.closest( '.wikitraceability-product-row' );
+                    var input = row.querySelector( '.wikitraceability-product-selector' );
+                    input.value = suggestion.textContent;
+                    input.setAttribute( 'aria-expanded', 'false' );
+                    input.removeAttribute( 'aria-activedescendant' );
+                    suggestion.parentNode.hidden = true;
+                    status.textContent = 'Product selected.';
+                    return;
+                }
+                var removeButton = event.target.closest( '[data-remove-product]' );
+                if ( removeButton ) {
+                    var removeSection = removeButton.closest( '[data-product-list]' );
+                    var removeDirection = removeSection.getAttribute( 'data-product-list' );
+                    if ( removeSection.querySelectorAll( '.wikitraceability-product-row' ).length > 1 ) {
+                        removeButton.closest( '.wikitraceability-product-row' ).remove();
+                        updateProductRows( removeSection, removeDirection );
+                    }
+                    return;
+                }
+                var button = event.target.closest( '[data-add-product]' );
+                if ( !button ) {
+                    return;
+                }
+                var direction = button.getAttribute( 'data-add-product' );
+                var section = form.querySelector( '[data-product-list="' + direction + '"]' );
+                var rows = section.querySelector( '.wikitraceability-product-rows' );
+                var index = rows.children.length;
+                var label = direction === 'input' ? 'Input' : 'Output';
+                var input = document.createElement( 'input' );
+                var row = document.createElement( 'div' );
+                var rowLabel = document.createElement( 'label' );
+
+                input.id = 'wp' + label + 'Products-' + index;
+                input.name = 'wp' + label + 'Products[]';
+                input.type = 'search';
+                input.className = 'mw-htmlform-field wikitraceability-product-selector';
+                input.autocomplete = 'off';
+                input.setAttribute( 'aria-autocomplete', 'list' );
+                input.setAttribute( 'aria-expanded', 'false' );
+                input.setAttribute( 'aria-controls', input.id + '-suggestions' );
+                input.required = true;
+                row.className = 'wikitraceability-product-row';
+                rowLabel.htmlFor = input.id;
+                rowLabel.textContent = label + ' product ' + ( index + 1 );
+                row.appendChild( rowLabel );
+                row.appendChild( document.createElement( 'br' ) );
+                row.appendChild( input );
+                var suggestionList = document.createElement( 'div' );
+                suggestionList.id = input.id + '-suggestions';
+                suggestionList.className = 'wikitraceability-product-suggestions';
+                suggestionList.setAttribute( 'role', 'listbox' );
+                suggestionList.hidden = true;
+                row.appendChild( suggestionList );
+                var removeButton = document.createElement( 'button' );
+                removeButton.type = 'button';
+                removeButton.className = 'wikitraceability-remove-product';
+                removeButton.setAttribute( 'data-remove-product', '' );
+                removeButton.setAttribute( 'aria-label', 'Remove ' + direction + ' product ' + ( index + 1 ) );
+                removeButton.textContent = 'Remove';
+                row.appendChild( removeButton );
+                rows.appendChild( row );
+                updateProductRows( section, direction );
+                input.focus();
+            } );
+
+            form.addEventListener( 'keydown', function ( event ) {
+                var input = event.target;
+                if ( !input.classList.contains( 'wikitraceability-product-selector' ) ) {
+                    return;
+                }
+                var suggestionList = form.querySelector( '#' + input.getAttribute( 'aria-controls' ) );
+                var options = Array.prototype.slice.call(
+                    suggestionList.querySelectorAll( '.wikitraceability-product-suggestion' )
+                );
+                if ( event.key === 'Escape' ) {
+                    suggestionList.hidden = true;
+                    input.setAttribute( 'aria-expanded', 'false' );
+                    input.removeAttribute( 'aria-activedescendant' );
+                    return;
+                }
+                if ( !options.length || suggestionList.hidden ) {
+                    return;
+                }
+                if ( event.key === 'ArrowDown' || event.key === 'ArrowUp' ) {
+                    event.preventDefault();
+                    var activeIndex = options.findIndex( function ( option ) {
+                        return option.id === input.getAttribute( 'aria-activedescendant' );
+                    } );
+                    activeIndex += event.key === 'ArrowDown' ? 1 : -1;
+                    activeIndex = ( activeIndex + options.length ) % options.length;
+                    options.forEach( function ( option, index ) {
+                        option.setAttribute( 'aria-selected', index === activeIndex ? 'true' : 'false' );
+                    } );
+                    input.setAttribute( 'aria-activedescendant', options[ activeIndex ].id );
+                } else if ( event.key === 'Enter' && input.hasAttribute( 'aria-activedescendant' ) ) {
+                    event.preventDefault();
+                    options.forEach( function ( option ) {
+                        if ( option.id === input.getAttribute( 'aria-activedescendant' ) ) {
+                            input.value = option.textContent;
+                            suggestionList.hidden = true;
+                            input.setAttribute( 'aria-expanded', 'false' );
+                            input.removeAttribute( 'aria-activedescendant' );
+                            status.textContent = 'Product selected.';
+                        }
+                    } );
+                }
+            } );
+
+            status.textContent = 'Type at least 3 letters to find products.';
+        },
+
         importOpenFoodFactsProduct: function ( product ) {
             document.getElementById( 'wpProductName' ).value = product.product_name || '';
             document.getElementById( 'wpProductBrand' ).value = product.brands || '';
@@ -253,13 +547,17 @@
 
     $( document ).ready( function () {
         mw.WikiTraceability.initAllTrees();
+        mw.WikiTraceability.initLocalProductLookup();
         mw.WikiTraceability.initOpenFoodFactsLookup();
+        mw.WikiTraceability.initTransformationProductSelectors();
     } );
 
     if ( mw.loader ) {
         mw.loader.using( 'ext.wikitraceability', function () {
             mw.WikiTraceability.initAllTrees();
+            mw.WikiTraceability.initLocalProductLookup();
             mw.WikiTraceability.initOpenFoodFactsLookup();
+            mw.WikiTraceability.initTransformationProductSelectors();
         } );
     }
 

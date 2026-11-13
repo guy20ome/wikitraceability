@@ -2,11 +2,61 @@
 .mw-htmlform-field { width: 100%; max-width: 24em; margin-bottom: 0.75em; }
 .mw-htmlform-submit { margin-top: 0.5em; }
 
+.wikitraceability-product-list {
+    margin: 1em 0;
+}
+
+.wikitraceability-product-row {
+    position: relative;
+    margin-bottom: 0.5em;
+}
+
+.wikitraceability-remove-product {
+    margin: 0 0 0.75em 0.5em;
+}
+
+.wikitraceability-product-suggestions {
+    position: absolute;
+    z-index: 100;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-width: 24em;
+    max-height: 16em;
+    overflow-y: auto;
+    border: 1px solid #a2a9b1;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.wikitraceability-product-suggestion {
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+.wikitraceability-product-suggestion[aria-selected="true"],
+.wikitraceability-product-suggestion:hover {
+    background: #eaecf0;
+}
+
+#wikitraceability-product-suggestions-status {
+    min-height: 1.5em;
+    color: #54595d;
+}
+
 .wikitraceability-off-lookup {
     margin: 1em 0;
     padding: 1em;
     border: 1px solid #a2a9b1;
     border-radius: 4px;
+}
+
+.wikitraceability-local-lookup {
+    margin: 1em 0;
+    padding: 1em;
+    border: 1px solid #a2a9b1;
+    border-radius: 4px;
+    background-color: #f8f9fa;
 }
 
 .wikitraceability-off-attribution {

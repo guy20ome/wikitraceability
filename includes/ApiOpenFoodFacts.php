@@ -29,7 +29,7 @@ class ApiOpenFoodFacts extends ApiBase {
         );
         $request->setHeader(
             'User-Agent',
-            'WikiTraceability/0.3.0 (https://github.com/guy20ome/wikitraceability)'
+            'WikiTraceability/0.3.10 (https://github.com/guy20ome/wikitraceability)'
         );
         $status = $request->execute();
         if ( !$status->isOK() || $request->getStatus() < 200 || $request->getStatus() >= 300 ) {

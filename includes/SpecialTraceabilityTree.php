@@ -45,7 +45,11 @@ class SpecialTraceabilityTree extends SpecialPage {
     private function displayTree( $out, $productName ) {
         $out->addHTML( '<h2>Traceability Tree for: ' . htmlspecialchars( $productName ) . '</h2>' );
         
-        $out->addHTML( '<div id="traceability-tree-container" class="wikitraceability-tree-container" data-product="' . htmlspecialchars( $productName, ENT_QUOTES ) . '"></div>' );
+        $out->addHTML(
+            '<div id="traceability-tree-container" class="wikitraceability-tree-container" data-product="' .
+            htmlspecialchars( $productName, ENT_QUOTES ) . '" data-can-edit="' .
+            ( $out->getUser()->isRegistered() ? 'true' : 'false' ) . '"></div>'
+        );
         $out->addHTML( '<div id="traceability-tree-details"></div>' );
 
         $this->displayProductInfo( $out, $productName );

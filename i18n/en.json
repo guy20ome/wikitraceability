@@ -3,6 +3,7 @@
     "authors": ["guy20ome"]
   },
   "wikitraceability-desc": "Provides basic traceability product and transformation management for Semantic MediaWiki.",
+  "traceabilityproduct": "Product Search",
   "specialpage-traceabilityproduct": "Traceability Product",
   "specialpage-traceabilitytransformation": "Traceability Transformation",
   "specialpage-traceabilitytree": "Traceability Tree",

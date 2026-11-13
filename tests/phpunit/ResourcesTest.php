@@ -60,14 +60,56 @@ class ResourcesTest extends TestCase
         $this->assertStringContainsString( 'ODbL', $productForm );
     }
 
+    public function testProductLookupSearchesTheLocalWikiCatalog()
+    {
+        $script = file_get_contents( __DIR__ . '/../../resources/src/Traceability.js' );
+        $productForm = file_get_contents( __DIR__ . '/../../includes/SpecialProduct.php' );
+
+        $this->assertStringContainsString( 'initLocalProductLookup', $script );
+        $this->assertStringContainsString( "action: 'ask'", $script );
+        $this->assertStringContainsString( '[[ProductName::+]]', $script );
+        $this->assertStringContainsString( 'productName.toLowerCase()', $script );
+        $this->assertStringContainsString( 'wikitraceability-local-results', $script );
+        $this->assertStringContainsString( 'wikitraceability-local-search', $productForm );
+    }
+
     public function testTreeNodesLinkToTheirCorrespondingPages()
     {
         $path = __DIR__ . '/../../resources/src/Traceability.js';
         $content = file_get_contents( $path );
 
+        $this->assertStringContainsString( "'Special:TraceabilityProduct', { product: product.name }", $content );
+        $this->assertStringContainsString( "getAttribute( 'data-can-edit' ) === 'true'", $content );
         $this->assertStringContainsString( 'mw.util.getUrl( product.name )', $content );
         $this->assertStringContainsString( 'pageTitle: pageTitle', $content );
         $this->assertStringContainsString( 'mw.util.getUrl( transformation.pageTitle )', $content );
+    }
+
+    public function testEmptyTraceabilityTreeLinksToTransformationCreation()
+    {
+        $script = file_get_contents( __DIR__ . '/../../resources/src/Traceability.js' );
+
+        $this->assertStringContainsString( 'No transformations found. Add a transformation for this product.', $script );
+        $this->assertStringContainsString( "'Special:TraceabilityTransformation'", $script );
+        $this->assertStringContainsString( 'wpOutputProducts: treeData.name', $script );
+    }
+
+    public function testTransformationProductSelectorsUseThreeCharacterCatalogSuggestions()
+    {
+        $script = file_get_contents( __DIR__ . '/../../resources/src/Traceability.js' );
+        $form = file_get_contents( __DIR__ . '/../../includes/SpecialTransformation.php' );
+
+        $this->assertStringContainsString( 'initTransformationProductSelectors', $script );
+        $this->assertStringContainsString( 'term.length < 3', $script );
+        $this->assertStringContainsString( '[[ProductName::+]]|?ProductName|limit=500', $script );
+        $this->assertStringContainsString( 'wikitraceability-product-suggestion', $script );
+        $this->assertStringContainsString( 'aria-activedescendant', $script );
+        $this->assertStringContainsString( 'data-add-product', $script );
+        $this->assertStringContainsString( 'data-remove-product', $script );
+        $this->assertStringContainsString( 'length > 1', $script );
+        $this->assertStringContainsString( 'productRows.length === 1', $script );
+        $this->assertStringContainsString( 'getArray( \'wpInputProducts\' )', $form );
+        $this->assertStringContainsString( 'getArray( \'wpOutputProducts\' )', $form );
     }
 
     public function testTraceabilityCssExists()

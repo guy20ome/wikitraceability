@@ -30,7 +30,15 @@ class TraceabilityTest extends TestCase
 
         $this->assertStringContainsString( 'wikitraceability-tree-container', $html );
         $this->assertStringContainsString( 'data-product="TestProduct"', $html );
+        $this->assertStringContainsString( 'data-can-edit="false"', $html );
         $this->assertStringContainsString( 'WikiTraceability.initTree', $html );
+    }
+
+    public function testEditableTraceabilityTreeMarksProductLinksAsEditable()
+    {
+        $html = Traceability::renderTraceabilityTree( 'TestProduct', true );
+
+        $this->assertStringContainsString( 'data-can-edit="true"', $html );
     }
 
     public function testRenderTraceabilityTreeEscapesHtml()

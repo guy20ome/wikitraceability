@@ -35,7 +35,7 @@ services:
       MEDIAWIKI_SITE_NAME: WikiTraceability
     volumes:
       - ./:/var/www/html/extensions/WikiTraceability:ro
-      - ./LocalSettings2.php:/var/www/html/LocalSettings.php:ro
+      - ./LocalSettings2.php:/var/www/html/LocalSettings2.php:ro
     networks:
       - mediawiki-network
 

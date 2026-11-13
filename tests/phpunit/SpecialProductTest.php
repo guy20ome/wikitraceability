@@ -23,7 +23,10 @@ class SpecialProductTest extends TestCase
         $this->outputMock->method( 'addWikiTextAsInterface' )->willReturn( null );
         $this->outputMock->method( 'addHTML' )->willReturn( null );
 
-        $this->requestMock = $this->createMock( \stdClass::class );
+        $this->requestMock = $this->getMockBuilder( \WebRequest::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( [ 'getText', 'getVal', 'wasPosted' ] )
+            ->getMock();
         $this->requestMock->method( 'getText' )->willReturnCallback( function ( $key ) {
             switch ( $key ) {
                 case 'wpAction': return null;
@@ -31,6 +34,7 @@ class SpecialProductTest extends TestCase
                 default: return null;
             }
         } );
+        $this->requestMock->method( 'wasPosted' )->willReturn( false );
 
         $this->userMock = $this->createMock( \stdClass::class );
         $this->userMock->method( 'isRegistered' )->willReturn( true );
@@ -86,6 +90,9 @@ class SpecialProductTest extends TestCase
         $this->assertStringContainsString( 'Category', $html );
         $this->assertStringContainsString( 'wpProductCategory', $html );
         $this->assertStringContainsString( 'Create Product', $html );
+        $this->assertStringContainsString( 'wikitraceability-local-search', $html );
+        $this->assertStringContainsString( 'Search products in this wiki', $html );
+        $this->assertStringContainsString( 'wikitraceability-off-search', $html );
     }
 
     public function testFormHasWeightUnitOptions()

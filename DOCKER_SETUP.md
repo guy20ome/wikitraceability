@@ -15,16 +15,14 @@ This provides a complete local development environment with **MediaWiki**, **Sem
 git clone https://github.com/guy20ome/wikitraceability.git
 cd wikitraceability
 
-# 2. Build and start all services
+# 2. Build and start all services; the container initializes MediaWiki and
+#    Semantic MediaWiki automatically on first startup
 docker compose up -d --build
 
-# 3. Initialize the database and Semantic MediaWiki
-./init-mediawiki.sh
-
-# 4. Wait for the site to be ready
+# 3. Wait for the site to be ready
 docker compose logs -f mediawiki
 
-# 5. Access MediaWiki
+# 4. Access MediaWiki
 # Open: http://localhost:8080
 # Admin: Admin / WikiTraceAdminPass2026
 ```
@@ -70,9 +68,8 @@ A helper script is provided for common operations:
 # Show help
 ./docker-setup.sh help
 
-# Start services and initialize the database on first run
+# Start services; the database is initialized automatically on first run
 ./docker-setup.sh up
-./init-mediawiki.sh
 
 # Stop services
 ./docker-setup.sh down
@@ -115,8 +112,9 @@ composer install --dev
 
 ### WikiTraceability Special Pages
 - `Special:TraceabilityProduct` - Create/edit products
-- `Special:TraceabilityTransformation` - Create/edit transformations
+- `Special:TraceabilityTransformation` - Create/edit transformations; add or remove inputs and outputs (at least one of each) and choose products from suggestions after typing at least three characters
 - `Special:TraceabilityTree?product=ProductName` - View traceability tree
+- Logged-in users can edit or delete products and transformations from their wiki pages. Deleting a product is blocked while any transformation uses it as an input or output. The extension's `wikitraceability-delete` right is granted to registered users for these special-page operations only.
 
 ### Semantic MediaWiki Features
 - All WikiTraceability data stored as SMW properties
