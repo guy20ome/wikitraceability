@@ -188,16 +188,16 @@ class SpecialTransformation extends SpecialPage {
         $semanticContent = '';
         foreach ( $properties as $property => $value ) {
             if ( $value !== '' ) {
-                $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . "]]\n";
+                $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . '| ]]' . "\n";
             }
         }
 
         foreach ( $inputProducts as $product ) {
-            $semanticContent .= '[[HasInputProducts::' . self::escapeSemanticValue( $product ) . "]]\n";
+            $semanticContent .= '[[HasInputProducts::' . self::escapeSemanticValue( $product ) . '| ]]' . "\n";
         }
 
         foreach ( $outputProducts as $product ) {
-            $semanticContent .= '[[HasOutputProducts::' . self::escapeSemanticValue( $product ) . "]]\n";
+            $semanticContent .= '[[HasOutputProducts::' . self::escapeSemanticValue( $product ) . '| ]]' . "\n";
         }
 
         $wikiPage = new WikiPage( $title );

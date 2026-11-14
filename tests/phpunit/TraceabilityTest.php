@@ -75,4 +75,10 @@ class TraceabilityTest extends TestCase
         $html = Traceability::renderTransformationDetails( 'TestTransformation' );
         $this->assertSame( '', $html );
     }
+
+    public function testRenderProductDetailsReturnsEmptyWithoutSMW()
+    {
+        $html = Traceability::renderProductDetails( 'TestProduct' );
+        $this->assertSame( '', $html );
+    }
 }

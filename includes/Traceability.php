@@ -16,8 +16,10 @@ class Traceability {
             $entityType = self::getEntityType( $productName );
             if ( $entityType === 'product' ) {
                 $out->addModules( 'ext.wikitraceability' );
+                $detailsHtml = self::renderProductDetails( $productName );
+                $managementLinks = self::renderManagementLinks( $entityType, $productName );
                 $treeHtml = self::renderTraceabilityTree( $productName );
-                $html .= $treeHtml . self::renderManagementLinks( $entityType, $productName );
+                $html = $detailsHtml . $managementLinks . $html . $treeHtml;
             } elseif ( $entityType === 'transformation' ) {
                 $detailsHtml = self::renderTransformationDetails( $productName );
                 $managementLinks = self::renderManagementLinks( $entityType, $productName );
@@ -68,7 +70,7 @@ class Traceability {
         return self::getPageProperties( $productName, [
             'ProductName', 'ProductBrand', 'ProductBarcode', 'ProductWeight',
             'ProductWeightUnit', 'ProductDescription', 'ProductPrice', 'ProductCategory',
-            'ProductSource'
+            'ProductSource', 'ProductDataLicense', 'ProductSourceURL'
         ] );
     }
 
@@ -124,6 +126,45 @@ class Traceability {
     public static function renderTraceabilityTree( string $productName ): string {
         return '<div class="wikitraceability-tree-container" data-product="' .
             htmlspecialchars( $productName, ENT_QUOTES ) . '"></div>';
+    }
+
+    public static function renderProductDetails( string $productName ): string {
+        $details = self::getProductDetails( $productName );
+        if ( empty( $details ) ) {
+            return '';
+        }
+        $html = '<section class="wikitraceability-details wikitraceability-product-details">'
+            . '<h2>' . htmlspecialchars( $details['ProductName'] ?? $productName ) . ' — Product Details</h2>'
+            . '<table class="wikitable">';
+        $fields = [
+            'ProductName' => 'Product Name',
+            'ProductBrand' => 'Brand',
+            'ProductBarcode' => 'Barcode',
+            'ProductWeight' => 'Weight',
+            'ProductWeightUnit' => 'Weight Unit',
+            'ProductDescription' => 'Description',
+            'ProductPrice' => 'Price (USD)',
+            'ProductCategory' => 'Category',
+            'ProductSource' => 'Source',
+            'ProductDataLicense' => 'Data License'
+        ];
+        foreach ( $fields as $property => $label ) {
+            $value = $details[$property] ?? '';
+            if ( $value === '' ) {
+                continue;
+            }
+            $cell = htmlspecialchars( $value );
+            if ( $property === 'ProductSource' && ( $details['ProductSourceURL'] ?? '' ) !== '' ) {
+                $cell = '<a href="' . htmlspecialchars( $details['ProductSourceURL'], ENT_QUOTES ) .
+                    '" target="_blank" rel="noopener noreferrer">' . $cell . '</a>';
+            }
+            $html .= '<tr>'
+                . '<th>' . htmlspecialchars( $label ) . '</th>'
+                . '<td>' . $cell . '</td>'
+                . '</tr>';
+        }
+        $html .= '</table></section>';
+        return $html;
     }
 
     public static function renderTransformationDetails( string $transformationName ): string {

@@ -206,7 +206,7 @@ class SpecialProduct extends SpecialPage {
         $semanticContent = '';
         foreach ( $properties as $property => $value ) {
             if ( $value !== '' ) {
-                $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . "]]\n";
+                $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . '| ]]' . "\n";
             }
         }
         if ( $source === 'Open Food Facts' ) {
