@@ -209,12 +209,6 @@ class SpecialProduct extends SpecialPage {
                 $semanticContent .= '[[' . $property . '::' . self::escapeSemanticValue( $value ) . '| ]]' . "\n";
             }
         }
-        if ( $source === 'Open Food Facts' ) {
-            $sourceLink = $barcode !== ''
-                ? ' [https://world.openfoodfacts.org/product/' . rawurlencode( $barcode ) . ' Open Food Facts]'
-                : ' Open Food Facts';
-            $semanticContent .= 'Product data sourced from' . $sourceLink . " (ODbL).\n";
-        }
 
         // Create or update the page
         $wikiPage = new WikiPage( $title );

@@ -3,11 +3,11 @@
 .mw-htmlform-submit { margin-top: 0.5em; }
 
 .wikitraceability-management-links {
-    margin: 1em 0;
+    margin: 0.25em 0 0.25em 0;
 }
 
 .wikitraceability-details {
-    margin: 1em 0;
+    margin: 0.25em 0 0.25em 0;
     padding: 1em;
     border: 1px solid #a2a9b1;
     border-radius: 4px;
@@ -16,6 +16,7 @@
 
 .wikitraceability-details h2 {
     margin-top: 0;
+    margin-bottom: 0.5em;
 }
 
 .wikitraceability-details h3 {
@@ -191,5 +192,5 @@
 }
 
 .wikitraceability-tree-container {
-    margin: 1em 0;
+    margin: 0 0 0.25em 0;
 }

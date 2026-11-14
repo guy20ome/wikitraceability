@@ -19,7 +19,7 @@ class Traceability {
                 $detailsHtml = self::renderProductDetails( $productName );
                 $managementLinks = self::renderManagementLinks( $entityType, $productName );
                 $treeHtml = self::renderTraceabilityTree( $productName );
-                $html = $detailsHtml . $managementLinks . $html . $treeHtml;
+                $html = $treeHtml . $detailsHtml . $managementLinks . $html;
             } elseif ( $entityType === 'transformation' ) {
                 $detailsHtml = self::renderTransformationDetails( $productName );
                 $managementLinks = self::renderManagementLinks( $entityType, $productName );
