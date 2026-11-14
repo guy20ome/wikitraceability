@@ -2,6 +2,54 @@
 .mw-htmlform-field { width: 100%; max-width: 24em; margin-bottom: 0.75em; }
 .mw-htmlform-submit { margin-top: 0.5em; }
 
+.wikitraceability-management-links {
+    margin: 1em 0;
+}
+
+.wikitraceability-details {
+    margin: 1em 0;
+    padding: 1em;
+    border: 1px solid #a2a9b1;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.wikitraceability-details h2 {
+    margin-top: 0;
+}
+
+.wikitraceability-details h3 {
+    margin-bottom: 0.25em;
+}
+
+.wikitraceability-details table {
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+.wikitraceability-details th,
+.wikitraceability-details td {
+    text-align: left;
+    padding: 0.25em 0.5em;
+    border-bottom: 1px solid #eaecf0;
+}
+
+.wikitraceability-details th {
+    font-weight: bold;
+    width: 30%;
+}
+
+.wikitraceability-details ul {
+    margin: 0 0 1em 1.5em;
+    padding: 0;
+}
+
+.wikitraceability-details-none {
+    color: #54595d;
+    font-style: italic;
+    margin: 0 0 1em;
+}
+
 .wikitraceability-product-list {
     margin: 1em 0;
 }

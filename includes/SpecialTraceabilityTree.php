@@ -47,8 +47,7 @@ class SpecialTraceabilityTree extends SpecialPage {
         
         $out->addHTML(
             '<div id="traceability-tree-container" class="wikitraceability-tree-container" data-product="' .
-            htmlspecialchars( $productName, ENT_QUOTES ) . '" data-can-edit="' .
-            ( $out->getUser()->isRegistered() ? 'true' : 'false' ) . '"></div>'
+            htmlspecialchars( $productName, ENT_QUOTES ) . '"></div>'
         );
         $out->addHTML( '<div id="traceability-tree-details"></div>' );
 

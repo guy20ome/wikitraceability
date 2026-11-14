@@ -78,9 +78,9 @@ class ResourcesTest extends TestCase
         $path = __DIR__ . '/../../resources/src/Traceability.js';
         $content = file_get_contents( $path );
 
-        $this->assertStringContainsString( "'Special:TraceabilityProduct', { product: product.name }", $content );
-        $this->assertStringContainsString( "getAttribute( 'data-can-edit' ) === 'true'", $content );
         $this->assertStringContainsString( 'mw.util.getUrl( product.name )', $content );
+        $this->assertStringNotContainsString( "'Special:TraceabilityProduct', { product: product.name }", $content );
+        $this->assertStringNotContainsString( "getAttribute( 'data-can-edit' ) === 'true'", $content );
         $this->assertStringContainsString( 'pageTitle: pageTitle', $content );
         $this->assertStringContainsString( 'mw.util.getUrl( transformation.pageTitle )', $content );
     }

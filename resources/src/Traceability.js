@@ -11,8 +11,6 @@
         this.container = typeof container === 'string' ?
             document.getElementById( container ) : container;
         this.productName = productName;
-        this.canEditProducts = this.container &&
-            this.container.getAttribute( 'data-can-edit' ) === 'true';
         this.init();
     };
 
@@ -106,9 +104,7 @@
 
         buildProductNode: function ( product ) {
             var html = '<div class="traceability-product-branch">';
-            var productUrl = this.canEditProducts ?
-                mw.util.getUrl( 'Special:TraceabilityProduct', { product: product.name } ) :
-                mw.util.getUrl( product.name );
+            var productUrl = mw.util.getUrl( product.name );
             html += '<a class="traceability-node traceability-node-link traceability-product" href="' +
                 this.escapeHtml( productUrl ) + '">';
             html += '<span class="traceability-node-name">' + this.escapeHtml( product.name ) + '</span>';

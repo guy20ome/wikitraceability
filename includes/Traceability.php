@@ -16,10 +16,12 @@ class Traceability {
             $entityType = self::getEntityType( $productName );
             if ( $entityType === 'product' ) {
                 $out->addModules( 'ext.wikitraceability' );
-                $treeHtml = self::renderTraceabilityTree( $productName, true );
+                $treeHtml = self::renderTraceabilityTree( $productName );
                 $html .= $treeHtml . self::renderManagementLinks( $entityType, $productName );
             } elseif ( $entityType === 'transformation' ) {
-                $html .= self::renderManagementLinks( $entityType, $productName );
+                $detailsHtml = self::renderTransformationDetails( $productName );
+                $managementLinks = self::renderManagementLinks( $entityType, $productName );
+                $html = $detailsHtml . $managementLinks . $html;
             }
         }
     }
@@ -119,10 +121,64 @@ class Traceability {
         return false;
     }
 
-    public static function renderTraceabilityTree( string $productName, bool $canEdit = false ): string {
+    public static function renderTraceabilityTree( string $productName ): string {
         return '<div class="wikitraceability-tree-container" data-product="' .
-            htmlspecialchars( $productName, ENT_QUOTES ) . '" data-can-edit="' .
-            ( $canEdit ? 'true' : 'false' ) . '"></div>';
+            htmlspecialchars( $productName, ENT_QUOTES ) . '"></div>';
+    }
+
+    public static function renderTransformationDetails( string $transformationName ): string {
+        $details = self::getTransformationDetails( $transformationName );
+        if ( empty( $details ) ) {
+            return '';
+        }
+        $html = '<section class="wikitraceability-details wikitraceability-transformation-details">'
+            . '<h2>' . htmlspecialchars( $details['TransformationName'][0] ?? $transformationName ) . ' — Transformation Details</h2>'
+            . '<table class="wikitable">';
+        $fields = [
+            'TransformationName' => 'Name',
+            'TransformationType' => 'Type',
+            'InputQuantityPerUnit' => 'Input Quantity per Unit',
+            'OutputQuantityPerUnit' => 'Output Quantity per Unit',
+            'TransformationDescription' => 'Description'
+        ];
+        foreach ( $fields as $property => $label ) {
+            $values = $details[$property] ?? [];
+            if ( empty( $values ) ) {
+                continue;
+            }
+            $html .= '<tr>'
+                . '<th>' . htmlspecialchars( $label ) . '</th>'
+                . '<td>' . htmlspecialchars( implode( ', ', $values ) ) . '</td>'
+                . '</tr>';
+        }
+        $html .= '</table>';
+
+        $html .= '<h3>Input Products</h3>';
+        $inputValues = $details['HasInputProducts'] ?? [];
+        if ( !empty( $inputValues ) ) {
+            $html .= '<ul>';
+            foreach ( $inputValues as $input ) {
+                $html .= '<li>' . htmlspecialchars( $input ) . '</li>';
+            }
+            $html .= '</ul>';
+        } else {
+            $html .= '<p class="wikitraceability-details-none">None</p>';
+        }
+
+        $html .= '<h3>Output Products</h3>';
+        $outputValues = $details['HasOutputProducts'] ?? [];
+        if ( !empty( $outputValues ) ) {
+            $html .= '<ul>';
+            foreach ( $outputValues as $output ) {
+                $html .= '<li>' . htmlspecialchars( $output ) . '</li>';
+            }
+            $html .= '</ul>';
+        } else {
+            $html .= '<p class="wikitraceability-details-none">None</p>';
+        }
+
+        $html .= '</section>';
+        return $html;
     }
 
     public static function getProductTransformations( string $productName ): array {
